@@ -37,9 +37,7 @@ class Http {
   static async post(url: URL | RequestInfo, data: any = {}, options?: any) {
     const formData = new FormData();
     for (const name in data as any) {
-      if (data.name) {
-        formData.append(name, data[name]);
-      }
+      formData.append(name, data[name]);
     }
 
     const defaultOptions = {

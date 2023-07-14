@@ -88,9 +88,7 @@ var Http = /** @class */ (function () {
                     case 0:
                         formData = new FormData();
                         for (name_1 in data) {
-                            if (data.name) {
-                                formData.append(name_1, data[name_1]);
-                            }
+                            formData.append(name_1, data[name_1]);
                         }
                         defaultOptions = {
                             headers: {
