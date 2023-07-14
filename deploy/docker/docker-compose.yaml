@@ -1,0 +1,6 @@
+version: '2'
+services:
+  dauthweb:
+    image: dauthweb:develop
+    ports:
+      - "9810:9810"
