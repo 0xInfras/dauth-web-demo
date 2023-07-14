@@ -1,21 +1,45 @@
 export interface CommonResponse<T> {
-  data: T;    // 响应内容
+  data: T; // 响应内容
   msg: string; // 响应信息
   error: number; // 错误码
 }
 
-export type TLoginType = 'GOOGLE' | 'TWITTER' | 'FACEBOOK' | ''
+export interface IWalletManager {
+  localData: ILocalData;
+  initSDK: (data: IInitConfig) => Promise<CommonResponse<null>>;
+  queryWalletAddress: () => Promise<CommonResponse<string>>;
+  queryWalletBalance: () => void;
+  link2EOAWallet: () => void;
+  logout: () => void;
+  createDAuthAccount: (data: IAuthRegister) => void;
+  loginByMobileOrEmail: (data: IAuthLogin) => void;
+  sendPhoneVerifyCode: (data: IAuthSmsCode) => void;
+  sendEmailVerifyCode: (data: IAuthEmailCode) => void;
+  loginWithType: (data: ILoginInfo) => void;
+  checkLoginRedirctUrl: (url?: string) => Promise<any>;
+  bindPhone: (data: IAuthSmsBind) => void;
+  bindEmail: (data: IAuthEmailBind) => void;
+  queryAccountByEmail: (data: IAuthEmailUserInfo) => void;
+  queryAccountByAuthId: (data: IAuthIdUserInfo) => void;
+  setPassword: (data: IAuthSetPass) => void;
+  setRecoverPassword: (data: IAuthRecoverPass) => void;
+  createWallet: (data: ICreateWallet) => void;
+  requestRecover: (data: IRecoverkey) => void;
+  estimateGas: (data: IEstimateGas) => void;
+}
+
+export type TLoginType = 'GOOGLE' | 'TWITTER' | 'FACEBOOK' | '';
 
 export interface ILocalData {
-  address: string,
-  configInfo: IInitConfig
-  loginInfo: ILoginInfo,
+  address: string;
+  configInfo: IInitConfig;
+  loginInfo: ILoginInfo;
 }
 
 export interface ILoginInfo {
-  type: TLoginType,
-  clientId: string,
-  authUrl: string,
+  type: TLoginType;
+  clientId: string;
+  authUrl: string;
   redirectUri?: string;
 }
 
@@ -46,7 +70,7 @@ export interface IAuthEmailCode {
 }
 
 export interface IAuthThirdParty {
-  type: LoginType   
+  type: LoginType;
 }
 
 export interface IAuthSmsBind {
@@ -62,23 +86,23 @@ export interface IAuthEmailBind {
 }
 
 export interface IAuthEmailUserInfo {
-  email: string;  // 邮箱
+  email: string; // 邮箱
 }
 
 export interface IAuthIdUserInfo {
-  openId: string; 
+  openId: string;
 }
 
 export interface IAuthSetPass {
-  passWord: string; 
+  passWord: string;
 }
 
 export interface IAuthRecoverPass {
-  resetPwdParams: string; 
+  resetPwdParams: string;
 }
 
 export interface ICreateWallet {
-  passcode: string; 
+  passcode: string;
 }
 
 export interface IRecoverkey {

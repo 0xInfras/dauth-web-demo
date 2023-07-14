@@ -1,6 +1,8 @@
 <template>
   <div class="test">
-    <button @click="test">测试Twitter登录</button>
+    <button @click="startAuth">
+      发起Twitter登录授权
+    </button>
   </div>
 </template>
 
@@ -12,16 +14,23 @@ import WalletManager from 'dauth-web'
 export default class TestUndo extends Vue {
   name = 'TestDAuthWeb'
 
-  private test() {
+  private startAuth() {
     const info = {
       type: 'TWITTER',
       clientId: 'Vks1X3E3WVZoTHpXUUx3RGhaNlU6MTpjaQ',
       redirectUri: window.location.href
     }
     WalletManager.loginWithType(info)
-    console.log('yes')
   }
 
+  mounted(){
+    this.checkAuth()
+  }
+
+  private async checkAuth() {
+    const response =  await WalletManager.checkLoginRedirctUrl()
+    window.alert(JSON.stringify(response))
+  }
 }
 </script>
 

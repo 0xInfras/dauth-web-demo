@@ -12,14 +12,12 @@
     "babel-eslint": "^10.1.0",
     "core-js": "^3.6.5",
     "dauth-web": "file:dauth-web",
-    "json2mq": "^0.2.0",
     "less": "^3.0.4",
     "less-loader": "^5.0.0",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.2.0",
-    "vue-waterfall": "^1.0.6",
     "vuex": "^3.4.0"
   },
   "devDependencies": {

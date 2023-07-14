@@ -1,14 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAuthMsgByUrl = exports.visitAuthUrl = exports.getQueryString = exports.getQueryStringByStr = void 0;
+exports.getMD5Str = exports.getAuthMsgByUrl = exports.visitAuthUrl = exports.getQueryString = exports.getQueryStringByStr = void 0;
+// @ts-ignore
+var md5 = require("md5");
 // 获取url #后面的参数
 var getQueryStringByStr = function (name, str) {
-    var query_string = str; // window.location.hash
-    if (!query_string)
+    var queryString = str; // window.location.hash
+    if (!queryString)
         return null; // 如果无参，返回null
     var reg = /[?&]?([^=]+)=([^&]*)/g;
     var tokens;
-    while (tokens = reg.exec(query_string)) {
+    while ((tokens = reg.exec(queryString))) {
         if (decodeURIComponent(tokens[1]) === name) {
             return decodeURIComponent(tokens[2]);
         }
@@ -18,14 +20,14 @@ var getQueryStringByStr = function (name, str) {
 exports.getQueryStringByStr = getQueryStringByStr;
 // 获取 url 参数
 var getQueryString = function (name) {
-    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
-    var r = window.location.search.substr(1).match(reg); //获取url中"?"符后的字符串并正则匹配
-    var context = "";
+    var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+    var r = window.location.search.substr(1).match(reg); // 获取url中"?"符后的字符串并正则匹配
+    var context = '';
     if (r != null)
         context = r[2];
     reg = null;
     r = null;
-    return context == null || context == "" || context == "undefined" ? "" : context;
+    return context === null || context === '' || context === 'undefined' ? '' : context;
 };
 exports.getQueryString = getQueryString;
 var visitAuthUrl = function (_a) {
@@ -36,7 +38,6 @@ exports.visitAuthUrl = visitAuthUrl;
 var getAuthMsgByUrl = function (callbackUrl) {
     var authMsg = '';
     var twitterUrl = new URL(window.location);
-    console.log('twitterUrl', twitterUrl);
     if (twitterUrl.searchParams.has('code')) {
         authMsg = getQueryString('code');
     }
@@ -44,3 +45,8 @@ var getAuthMsgByUrl = function (callbackUrl) {
     return authMsg;
 };
 exports.getAuthMsgByUrl = getAuthMsgByUrl;
+var getMD5Str = function (_a) {
+    var code = _a.code, user_type = _a.user_type;
+    return md5("code=".concat(code, "&security_key=2342a&*&45aeq&user_type=").concat(user_type));
+};
+exports.getMD5Str = getMD5Str;

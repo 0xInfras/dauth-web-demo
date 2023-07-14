@@ -2,10 +2,7 @@
   <div id="app">
     <div id="nav">
       <router-link to="/">
-        Home
-      </router-link> |
-      <router-link to="/space">
-        space
+        测试Dauth-SDK
       </router-link>
     </div>
     <router-view />
