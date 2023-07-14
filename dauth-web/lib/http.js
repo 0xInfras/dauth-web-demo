@@ -1,7 +1,4 @@
 "use strict";
-/**
- *@description Http请求封装
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -44,16 +41,13 @@ var mergeOptions = function (defaultOptions, options) {
     if (defaultOptions === void 0) { defaultOptions = {}; }
     if (options === void 0) { options = {}; }
     var headers = Object.assign({}, defaultOptions.headers, options.headers);
-    console.log('headers', headers);
-    var result = Object.assign({}, defaultOptions, options, { headers: headers });
-    console.log('result', result);
-    return result;
+    return Object.assign({}, defaultOptions, options, { headers: headers });
 };
 var Http = /** @class */ (function () {
     function Http() {
     }
     /**
-     *@description get请求
+     * @description get请求
      * @param {*} url
      * @param {*} options
      */
@@ -79,7 +73,7 @@ var Http = /** @class */ (function () {
         });
     };
     /**
-     *@description post请求
+     * @description post请求
      * @param {*} url
      * @param {*} [data={}]
      * @param {*} options
@@ -94,7 +88,9 @@ var Http = /** @class */ (function () {
                     case 0:
                         formData = new FormData();
                         for (name_1 in data) {
-                            formData.append(name_1, data[name_1]);
+                            if (data.name) {
+                                formData.append(name_1, data[name_1]);
+                            }
                         }
                         defaultOptions = {
                             headers: {

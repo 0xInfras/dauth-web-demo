@@ -1,15 +1,12 @@
-/**
- *@description Http请求封装
- */
 declare class Http {
     /**
-     *@description get请求
+     * @description get请求
      * @param {*} url
      * @param {*} options
      */
     static get(url: URL | RequestInfo, options?: any): Promise<any>;
     /**
-     *@description post请求
+     * @description post请求
      * @param {*} url
      * @param {*} [data={}]
      * @param {*} options

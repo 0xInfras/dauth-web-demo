@@ -1,21 +1,11 @@
-
-/**
- *@description Http请求封装
- */
-
 const mergeOptions = (defaultOptions: any = {}, options: any = {}) => {
   const headers = Object.assign({}, defaultOptions.headers, options.headers);
-    console.log('headers', headers)
-
-  const result = Object.assign({}, defaultOptions, options, { headers });
-      console.log('result', result)
-
-  return result 
+  return Object.assign({}, defaultOptions, options, { headers });
 };
 
 class Http {
   /**
-   *@description get请求
+   * @description get请求
    * @param {*} url
    * @param {*} options
    */
@@ -38,17 +28,18 @@ class Http {
     return response.json();
   }
   /**
-   *@description post请求
+   * @description post请求
    * @param {*} url
    * @param {*} [data={}]
    * @param {*} options
    * @return {*}
    */
   static async post(url: URL | RequestInfo, data: any = {}, options?: any) {
-    const formData  = new FormData();
-          
-    for(const name in (data as any)) {
-      formData.append(name, data[name]);
+    const formData = new FormData();
+    for (const name in data as any) {
+      if (data.name) {
+        formData.append(name, data[name]);
+      }
     }
 
     const defaultOptions = {

@@ -53,20 +53,8 @@ const getAuthMsgByUrl = (callbackUrl: string) => {
   return authMsg;
 };
 
-const getMD5Str = ({
-  code,
-  user_type
-}: {
-  code: string;
-  user_type: number;
-  }): string => {
-  return md5(`code=${code}&security_key=2342a&*&45aeq&user_type=${user_type}`)
-}
-
-export {
-  getQueryStringByStr,
-  getQueryString,
-  visitAuthUrl,
-  getAuthMsgByUrl,
-  getMD5Str
+const getMD5Str = ({ code, user_type }: { code: string; user_type: number }): string => {
+  return md5(`code=${code}&security_key=2342a&*&45aeq&user_type=${user_type}`);
 };
+
+export { getQueryStringByStr, getQueryString, visitAuthUrl, getAuthMsgByUrl, getMD5Str };

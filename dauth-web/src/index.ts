@@ -1,5 +1,5 @@
-import { AUTH_URL } from "./const";
-import { visitAuthUrl, getAuthMsgByUrl, getMD5Str } from "./utils";
+import { AUTH_URL } from './const';
+import { visitAuthUrl, getAuthMsgByUrl, getMD5Str } from './utils';
 import {
   CommonResponse,
   IWalletManager,
@@ -18,41 +18,41 @@ import {
   IAuthRecoverPass,
   ICreateWallet,
   IRecoverkey,
-  IEstimateGas
-} from "./type";
+  IEstimateGas,
+} from './type';
 // @ts-ignore
-import { Http } from "./http";
+import { Http } from './http';
 
 const WalletManager = (): IWalletManager => {
   const localData: ILocalData = {
-    address: "",
+    address: '',
     loginInfo: {
-      type: "",
-      clientId: "",
-      authUrl: "",
-      redirectUri: ""
+      type: '',
+      clientId: '',
+      authUrl: '',
+      redirectUri: '',
     },
     configInfo: {
-      appId: "",
-      appKey: "",
-      urlForAppServerKeyToSubmit: ""
-    }
+      appId: '',
+      appKey: '',
+      urlForAppServerKeyToSubmit: '',
+    },
   };
 
   const initSDK = (data: IInitConfig): Promise<CommonResponse<null>> => {
     localData.configInfo = data;
     return Promise.resolve({
       data: null,
-      msg: "success",
-      error: 0
+      msg: 'success',
+      error: 0,
     });
   };
 
   const queryWalletAddress = (): Promise<CommonResponse<string>> => {
     return Promise.resolve({
       data: localData.address,
-      msg: "success",
-      error: 0
+      msg: 'success',
+      error: 0,
     });
   };
 
@@ -81,33 +81,30 @@ const WalletManager = (): IWalletManager => {
   const checkLoginRedirctUrl = async (url?: string): Promise<CommonResponse<any>> => {
     const checkUrL = url ? url : window.location.href;
     const code = getAuthMsgByUrl(checkUrL);
-    if (!code) return Promise.reject({
-      data: 'null',
-      msg: "success",
-      error: 0
-    });
+    if (!code)
+      return Promise.reject({
+        data: 'null',
+        msg: 'success',
+        error: 0,
+      });
     const signStr = getMD5Str({
       code,
-      user_type: 110
+      user_type: 110,
     });
     const data = {
       code,
       user_type: 110,
-      sign: signStr
+      sign: signStr,
     };
-    const response = await Http.post(
-      "https://api-dev.infras.online/account/v1/sociallogin/webexchangedtoken",
-      data,
-      {
-        headers: {
-          client_id: "1bfe5bbf619681e49cdc62d07badc4cb",
-        }
-      }
-    );
+    const response = await Http.post('https://api-dev.infras.online/account/v1/sociallogin/webexchangedtoken', data, {
+      headers: {
+        client_id: '1bfe5bbf619681e49cdc62d07badc4cb',
+      },
+    });
     return Promise.resolve({
       data: response,
-      msg: "success",
-      error: 0
+      msg: 'success',
+      error: 0,
     });
   };
 
@@ -150,7 +147,7 @@ const WalletManager = (): IWalletManager => {
     setRecoverPassword,
     createWallet,
     requestRecover,
-    estimateGas
+    estimateGas,
   };
 };
 

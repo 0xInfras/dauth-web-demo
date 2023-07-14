@@ -42,32 +42,32 @@ var utils_1 = require("./utils");
 var http_1 = require("./http");
 var WalletManager = function () {
     var localData = {
-        address: "",
+        address: '',
         loginInfo: {
-            type: "",
-            clientId: "",
-            authUrl: "",
-            redirectUri: ""
+            type: '',
+            clientId: '',
+            authUrl: '',
+            redirectUri: '',
         },
         configInfo: {
-            appId: "",
-            appKey: "",
-            urlForAppServerKeyToSubmit: ""
-        }
+            appId: '',
+            appKey: '',
+            urlForAppServerKeyToSubmit: '',
+        },
     };
     var initSDK = function (data) {
         localData.configInfo = data;
         return Promise.resolve({
             data: null,
-            msg: "success",
-            error: 0
+            msg: 'success',
+            error: 0,
         });
     };
     var queryWalletAddress = function () {
         return Promise.resolve({
             data: localData.address,
-            msg: "success",
-            error: 0
+            msg: 'success',
+            error: 0,
         });
     };
     var queryWalletBalance = function () { };
@@ -94,29 +94,29 @@ var WalletManager = function () {
                     if (!code)
                         return [2 /*return*/, Promise.reject({
                                 data: 'null',
-                                msg: "success",
-                                error: 0
+                                msg: 'success',
+                                error: 0,
                             })];
                     signStr = (0, utils_1.getMD5Str)({
                         code: code,
-                        user_type: 110
+                        user_type: 110,
                     });
                     data = {
                         code: code,
                         user_type: 110,
-                        sign: signStr
+                        sign: signStr,
                     };
-                    return [4 /*yield*/, http_1.Http.post("https://api-dev.infras.online/account/v1/sociallogin/webexchangedtoken", data, {
+                    return [4 /*yield*/, http_1.Http.post('https://api-dev.infras.online/account/v1/sociallogin/webexchangedtoken', data, {
                             headers: {
-                                client_id: "1bfe5bbf619681e49cdc62d07badc4cb",
-                            }
+                                client_id: '1bfe5bbf619681e49cdc62d07badc4cb',
+                            },
                         })];
                 case 1:
                     response = _a.sent();
                     return [2 /*return*/, Promise.resolve({
                             data: response,
-                            msg: "success",
-                            error: 0
+                            msg: 'success',
+                            error: 0,
                         })];
             }
         });
@@ -151,7 +151,7 @@ var WalletManager = function () {
         setRecoverPassword: setRecoverPassword,
         createWallet: createWallet,
         requestRecover: requestRecover,
-        estimateGas: estimateGas
+        estimateGas: estimateGas,
     };
 };
 exports.default = WalletManager();
