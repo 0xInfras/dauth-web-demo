@@ -23,6 +23,8 @@ export default class App extends Vue {
   // const reload = cacheCenter.read('reload') === 'true'
   //  !reload && cacheCenter.add('reloadAction', 'true')
 
+ 
+
    // method 2
    const reload = cacheCenter.read('reload') === 'true'
    reload ? cacheCenter.remove('reload') : cacheCenter.add('reload', 'true')

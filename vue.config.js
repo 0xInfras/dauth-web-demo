@@ -9,7 +9,8 @@ module.exports = {
   productionSourceMap: false,
 
   configureWebpack: (config) => {
-    const plugins = []
+    const plugins = [
+    ];
     config.plugins = [...config.plugins, ...plugins]
   },
 
