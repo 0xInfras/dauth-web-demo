@@ -34,6 +34,8 @@ export default class TestUndo extends Vue {
   mounted(){
     DAuthWalletManaget.initSDK({appId: "1bfe5bbf619681e49cdc62d07badc4cb",
     appKey: "4466*dff@cde",
+    signKey:"2342a&*&45aeq",
+    sdkVersion:"1.2.2",
     urlForAppServerKeyToSubmit:""});
     this.checkAuth()
   }
@@ -45,7 +47,7 @@ export default class TestUndo extends Vue {
       DAuthWalletManaget.createWallet({ dauthId: response.data.dauthId,
           access_token:response.data.dauthAccessToken}).then(
             (res:any)=>{
-              window.alert(res);
+              window.alert(res.data);
             }
           );
     }
