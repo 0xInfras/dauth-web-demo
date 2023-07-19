@@ -5,6 +5,7 @@ yarn.lock
 dauth-web
 dist.zip
 package-lock.json
+/out
 
 
 # local env files
