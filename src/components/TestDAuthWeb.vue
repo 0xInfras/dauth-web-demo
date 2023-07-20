@@ -105,6 +105,13 @@ export default class TestDAuthWeb extends Vue{
       console.log("check redecrit ", response.data);
       this.dauthAccessToken = response.data.dauthAccessToken;
       
+      // DAuthWalletManager.createWallet(dauthReponse).then(
+      //       (createRes:any)=>{
+      //         console.log(createRes);
+      //        this.addressText = createRes.data;
+      //       }
+      //     );
+
       DAuthWalletManager.queryWalletAddress(dauthReponse).then((res)=>{
         this.addressText = res.data;
       }
