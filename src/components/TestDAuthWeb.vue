@@ -1,9 +1,12 @@
-<!-- eslint-disable vue/valid-template-root -->
+<!-- eslint-disable vue/no-parsing-error -->
 <template>
   <div>
     <div class="TestDAuthWeb1">
       <button @click="startAuth">
         发起Twitter登录授权
+      </button>
+      <button @click="startAuthGoogle">
+        发起Google登录授权
       </button>
     </div>
     <div class="TestDAuthWeb2">
@@ -21,12 +24,16 @@
     <div class="TestDAuthWeb4">
       <label>{{ trxRes }}</label>
     </div>
+    <div>
+      <button @click="logout">退出</button>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import {DAuthWalletManager} from "dauth-web";
+import {DAuthWalletManager, TLoginType } from "dauth-web";
+
 
 @Component
 export default class TestDAuthWeb extends Vue{
@@ -41,11 +48,32 @@ export default class TestDAuthWeb extends Vue{
 
     startAuth() {
     const info = {
-      type: 'TWITTER',
+      type: "TWITTER" as TLoginType,
       clientId: 'Vks1X3E3WVZoTHpXUUx3RGhaNlU6MTpjaQ',
-      redirectUri: window.location.href
+      redirectUri: "https://demos.infras.online/space"
     }
     DAuthWalletManager.loginWithType(info)
+  }
+
+  startAuthGoogle() {
+    const info = {
+      type: "GOOGLE" as TLoginType,
+      clientId: '209392989758-j14das5beql07e9ifomltgv3icgiuuvh.apps.googleusercontent.com',
+      redirectUri: "http://localhost:3000",
+      clientSecret:"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"
+    }
+    DAuthWalletManager.loginWithType(info)
+  }
+
+  logout(){
+    DAuthWalletManager.logout(this.dauthID, this.dauthAccessToken).then(()=>{
+      this.addressText = "地址";
+      window.alert("退出成功");
+    }
+    ).catch(()=>{
+      window.alert("退出失败");
+    })
+
   }
 
    transfer(){
@@ -66,17 +94,18 @@ export default class TestDAuthWeb extends Vue{
     DAuthWalletManager.estimateGas(callData, userInfo).then(
       (gasres)=>{
         if ("" !== this.addressText){
+        console.log("estmit gas ",gasres.data.verificationGas, gasres.data.callGas )
           //gas预估结果，提交交易
         DAuthWalletManager.execute(callData,
             {
               verificationGas:gasres.data.verificationGas,
-              callGas:gasres.data.callGas
+              callGas:gasres.data.callGas + 21000 * 1000
             },
             userInfo
           ).then((res)=>{
-            this.trxRes = res;
+            this.trxRes = res.data;
           }).catch((res)=>{
-            this.trxRes = res;
+            this.trxRes = res.data;
           });
         }
       }
@@ -85,48 +114,50 @@ export default class TestDAuthWeb extends Vue{
 
   mounted(){
     DAuthWalletManager.initSDK({appId: "1bfe5bbf619681e49cdc62d07badc4cb",
-    signKey:"2342a&*&45aeq",
     sdkVersion:"1.2.2",
-    serverTag:"test",
-    urlForAppServerKeyToSubmit:""});
+    serverTag:"test"
+  });
     this.checkAuth();
   }
 
    async checkAuth() {
-    const response =  await DAuthWalletManager.checkLoginRedirctUrl({});
+    const response =  await DAuthWalletManager.checkLoginRedirctUrl({url:window.location.href});
     //window.alert(JSON.stringify(response))
-    if( response.error === 0 ){
-      const dauthReponse = {
-        dauthId: response.data.dauthId,
-        accessToken:response.data.dauthAccessToken
-      }
+    console.log("check data ", response.data);
+    if (typeof response.data !== "undefined"){
+      if( response.error === 0){
+        const dauthReponse = {
+          dauthId: response.data.dauthId,
+          accessToken:response.data.dauthAccessToken
+        }
 
-      this.dauthID = response.data.dauthId;
-      console.log("check redecrit ", response.data);
-      this.dauthAccessToken = response.data.dauthAccessToken;
-      
-      // DAuthWalletManager.createWallet(dauthReponse).then(
-      //       (createRes:any)=>{
-      //         console.log(createRes);
-      //        this.addressText = createRes.data;
-      //       }
-      //     );
+        this.dauthID = response.data.dauthId;
+        console.log("check redecrit ", response.data);
+        this.dauthAccessToken = response.data.dauthAccessToken;
+        
+        // DAuthWalletManager.createWallet(dauthReponse).then(
+        //       (createRes:any)=>{
+        //         console.log(createRes);
+        //        this.addressText = createRes.data;
+        //       }
+        //     );
 
-      DAuthWalletManager.queryWalletAddress(dauthReponse).then((res)=>{
-        this.addressText = res.data;
+        DAuthWalletManager.queryWalletAddress(dauthReponse).then((res)=>{
+          this.addressText = res.data;
+        }
+        ).catch((res)=>{
+          console.log(res);
+          DAuthWalletManager.createWallet(dauthReponse).then(
+              (createRes:any)=>{
+                console.log(createRes);
+              this.addressText = createRes.data;
+              }
+            );
+        });
       }
-      ).catch((res)=>{
-        console.log(res);
-        DAuthWalletManager.createWallet(dauthReponse).then(
-            (createRes:any)=>{
-              console.log(createRes);
-             this.addressText = createRes.data;
-            }
-          );
-      });
-    }
-    else{
-      window.alert(JSON.stringify(response));
+      else{
+        window.alert(JSON.stringify(response));
+      }
     }
   }
 }
