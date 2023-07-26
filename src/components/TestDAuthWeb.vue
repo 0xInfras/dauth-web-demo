@@ -9,13 +9,23 @@
         发起Google登录授权
       </button>
     </div>
+    <div>
+      <input type="text" v-model="emailStr" placeholder="请输入邮箱地址">
+      <button @click="getEmailVCode">
+        获取验证码
+      </button>
+      <input type="text" v-model="emailVcode" placeholder="验证码">
+      <button @click="startAuthEmailVerCode">
+        登录
+      </button>
+    </div>
     <div class="TestDAuthWeb2">
       <label>address:</label>
       <label ref="addLabel">{{ addressText }}</label>
     </div>
     <div class="TestDAuthWeb3">
       <label>转账给</label>
-      <input type="text" v-model="transferAddress" placeholder="转出地址"></input>
+      <input type="text" v-model="transferAddress" placeholder="转出地址">
       <label>0.001eth</label>
       <button @click="transfer">
         提交
@@ -32,7 +42,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import {DAuthWalletManager, TLoginType } from "dauth-web";
+import {DAuthWalletManager, TLoginType} from "dauth-web";
 
 
 @Component
@@ -40,8 +50,10 @@ export default class TestDAuthWeb extends Vue{
 
    addressText : string = "地址"
    transferAddress : string = ""
-   trxRes : string = "交易结果"
+   trxRes : string = "交易结果";
 
+   emailStr:string = "";
+   emailVcode:string = "";
 
    dauthID : string = ''
    dauthAccessToken : string = ''
@@ -65,8 +77,32 @@ export default class TestDAuthWeb extends Vue{
     DAuthWalletManager.loginWithType(info)
   }
 
+  getEmailVCode(){
+    DAuthWalletManager.sendEmailVerifyCode({email:this.emailStr}).then(()=>{
+      window.alert("验证码获取成功")
+    })
+    .catch(
+      ()=>{
+        window.alert("验证码获取失败")
+      }
+    );
+  
+  }
+  startAuthEmailVerCode(){
+    const info = {
+      type: "EMAILVCODE" as TLoginType,
+      redirectUri:"http://localhost:3000",
+      payload:{
+        account : this.emailStr,
+        external : this.emailVcode
+      }
+    };
+    DAuthWalletManager.loginWithType(info)
+}
+
+
   logout(){
-    DAuthWalletManager.logout(this.dauthID, this.dauthAccessToken).then(()=>{
+    DAuthWalletManager.logout().then(()=>{
       this.addressText = "地址";
       window.alert("退出成功");
     }
