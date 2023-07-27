@@ -27,6 +27,10 @@
       <label>address:</label>
       <label ref="addLabel">{{ addressText }}</label>
     </div>
+    <div>
+      <label>余额:</label>
+      <label ref="addLabel">{{ banlanceText }}</label>
+    </div>
     <div class="TestDAuthWeb3">
       <label>转账给</label>
       <input type="text" v-model="transferAddress" placeholder="转出地址">
@@ -66,6 +70,7 @@ export default class TestDAuthWeb extends Vue{
    emailVcode:string = "";
 
    userinfoStr :string = "";
+   banlanceText:string = "";
 
     startAuth() {
     const info = {
@@ -145,9 +150,10 @@ export default class TestDAuthWeb extends Vue{
         };
 
     //预估gas
+    console.log("trans to ", this.addressText);
+    if ("" !== this.addressText){
     DAuthWalletManager.estimateGas(callData).then(
       (gasres)=>{
-        if ("" !== this.addressText){
         console.log("estmit gas ",gasres.data.verificationGas, gasres.data.callGas )
           //gas预估结果，提交交易
         DAuthWalletManager.execute(callData,
@@ -158,11 +164,14 @@ export default class TestDAuthWeb extends Vue{
           ).then((res)=>{
             this.trxRes = res.data;
           }).catch((res)=>{
-            this.trxRes = res.data;
+            window.alert(JSON.stringify( res.data));
           });
-        }
+        }).catch(
+          (res)=>{
+            window.alert(JSON.stringify( res.data));
+          }
+        );
       }
-    );
   }
 
   mounted(){
@@ -196,6 +205,17 @@ export default class TestDAuthWeb extends Vue{
         DAuthWalletManager.queryWalletAddress().then((res)=>{
           console.log("query address ", res.data)
           this.addressText = res.data;
+          this.banlanceText = "0"
+          DAuthWalletManager.queryWalletBalance().then((ret)=>{
+            this.banlanceText = ret.data.toString();
+          }).catch((ret)=>{
+            if(ret.error === -1){
+              this.loginState = "请重新登录";
+            }
+            else{
+              window.alert(JSON.stringify(res.data))
+            }
+          })
         }
         ).catch((res)=>{
           console.log("queryWalletAddress", res);
@@ -215,7 +235,7 @@ export default class TestDAuthWeb extends Vue{
                       this.loginState = "请重新登录";
                     }
                     else{
-                      window.alert(JSON.stringify(res))
+                      window.alert(JSON.stringify(res.data))
                     }
                   });
               }
