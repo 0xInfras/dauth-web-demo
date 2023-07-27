@@ -23,6 +23,13 @@
         登录
       </button>
     </div>
+    <div>
+      <input type="text" v-model="loginEmailStr" placeholder="请输入邮箱地址">
+      <input type="password" v-model="emailPassword" placeholder="密码">
+      <button @click="startAuthEmailPassword">
+        登录
+      </button>
+    </div>
     <div class="TestDAuthWeb2">
       <label>address:</label>
       <label ref="addLabel">{{ addressText }}</label>
@@ -30,6 +37,10 @@
     <div>
       <label>余额:</label>
       <label ref="addLabel">{{ banlanceText }}</label>
+    </div>
+    <div>
+      <label>BUSD余额:</label>
+      <label ref="addLabel">{{ usdtText }}</label>
     </div>
     <div class="TestDAuthWeb3">
       <label>转账给</label>
@@ -45,6 +56,21 @@
     <div>
       <button @click="queryUserInfo">查询用户信息</button>
       <label>{{ userinfoStr }}</label>
+    </div>
+    <div>
+      <label>绑定邮箱</label>
+      <input type="text" v-model="bindEmailStr" placeholder="请输入邮箱地址">
+      <button @click="getEmailBindVCode">
+          获取验证码
+      </button>
+      <input type="text" v-model="bindEmailVcode" placeholder="验证码">
+      <button @click="bindEmail">
+        绑定
+      </button>`
+    </div>
+    <div>
+      <input type="text" v-model="setPasswordStr" placeholder="设置密码">
+      <button @click="setPassword">设置</button>
     </div>
     <div>
       <button @click="logout">退出</button>
@@ -71,6 +97,14 @@ export default class TestDAuthWeb extends Vue{
 
    userinfoStr :string = "";
    banlanceText:string = "";
+   usdtText:string= "";
+
+   loginEmailStr:string="";
+   bindEmailStr:string= "";
+   emailPassword:string="";
+
+   bindEmailVcode:string="";
+   setPasswordStr:string="";
 
     startAuth() {
     const info = {
@@ -89,6 +123,50 @@ export default class TestDAuthWeb extends Vue{
       clientSecret:"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"
     }
     DAuthWalletManager.loginWithType(info)
+  }
+
+  startAuthEmailPassword(){
+    const info = {
+      type: "EMAIL" as TLoginType ,
+      redirectUri:"http://localhost:3000",
+      payload:{
+        account : this.emailStr,
+        external : this.emailPassword
+      }
+    };
+    DAuthWalletManager.loginWithType(info)
+  }
+
+  setPassword(){
+    DAuthWalletManager.setPassword({passWord:this.setPasswordStr})
+    .then((ret)=>{
+      window.alert(ret.msg);
+    }).catch((ret)=>{
+      if(ret.error === -1)
+      {
+        this.loginState = "请重新登录";
+      }
+      else{
+        window.alert(JSON.stringify(ret.data));
+      }
+    }
+    );
+  }
+
+  bindEmail(){
+    DAuthWalletManager.bindEmail({email:this.bindEmailStr, verifyCode:this.bindEmailVcode})
+    .then((ret)=>{
+      window.alert(ret.msg);
+    }).catch((ret)=>{
+      if(ret.error === -1)
+      {
+        this.loginState = "请重新登录";
+      }
+      else{
+        window.alert(JSON.stringify(ret.data));
+      }
+    }
+    );
   }
 
   queryUserInfo(){
@@ -114,11 +192,20 @@ export default class TestDAuthWeb extends Vue{
         window.alert("验证码获取失败")
       }
     );
-  
+  }
+  getEmailBindVCode(){
+    DAuthWalletManager.sendEmailVerifyCode({email:this.bindEmailStr}).then(()=>{
+      window.alert("验证码获取成功")
+    })
+    .catch(
+      ()=>{
+        window.alert("验证码获取失败")
+      }
+    );
   }
   startAuthEmailVerCode(){
     const info = {
-      type: "EMAILVCODE" as TLoginType,
+      type: "EMAIL" as TLoginType ,
       redirectUri:"http://localhost:3000",
       payload:{
         account : this.emailStr,
@@ -215,7 +302,18 @@ export default class TestDAuthWeb extends Vue{
             else{
               window.alert(JSON.stringify(res.data))
             }
-          })
+          });
+          DAuthWalletManager.queryWalletERC20("0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4").then((ret)=>{
+            this.usdtText = ret.data.toString();
+          }).catch((ret)=>{
+            if(ret.error === -1){
+              this.loginState = "请重新登录";
+            }
+            else{
+              window.alert(JSON.stringify(res.data))
+            }
+          });
+
         }
         ).catch((res)=>{
           console.log("queryWalletAddress", res);
@@ -250,7 +348,7 @@ export default class TestDAuthWeb extends Vue{
         });
       }
       else{
-        this.loginState = response + "登录失败";
+        this.loginState = response.data + "登录失败";
       }
     }
 }
