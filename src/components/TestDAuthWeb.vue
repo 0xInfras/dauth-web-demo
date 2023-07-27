@@ -1,6 +1,10 @@
 <!-- eslint-disable vue/no-parsing-error -->
 <template>
   <div>
+    <div>
+      <label>当前登录状态：</label>
+      <label>{{ loginState }}</label>
+    </div>
     <div class="TestDAuthWeb1">
       <button @click="startAuth">
         发起Twitter登录授权
@@ -52,11 +56,10 @@ export default class TestDAuthWeb extends Vue{
    transferAddress : string = ""
    trxRes : string = "交易结果";
 
+   loginState : string = "未登录";
+
    emailStr:string = "";
    emailVcode:string = "";
-
-   dauthID : string = ''
-   dauthAccessToken : string = ''
 
     startAuth() {
     const info = {
@@ -106,8 +109,8 @@ export default class TestDAuthWeb extends Vue{
       this.addressText = "地址";
       window.alert("退出成功");
     }
-    ).catch(()=>{
-      window.alert("退出失败");
+    ).catch((ret)=>{
+      window.alert("退出失败" + JSON.stringify(ret));
     })
 
   }
@@ -121,13 +124,8 @@ export default class TestDAuthWeb extends Vue{
           callData:'0x'
         };
 
-    const userInfo = 
-    {
-      dauthId:this.dauthID,
-      accessToken: this.dauthAccessToken
-    }
     //预估gas
-    DAuthWalletManager.estimateGas(callData, userInfo).then(
+    DAuthWalletManager.estimateGas(callData).then(
       (gasres)=>{
         if ("" !== this.addressText){
         console.log("estmit gas ",gasres.data.verificationGas, gasres.data.callGas )
@@ -136,8 +134,7 @@ export default class TestDAuthWeb extends Vue{
             {
               verificationGas:gasres.data.verificationGas,
               callGas:gasres.data.callGas + 21000 * 1000
-            },
-            userInfo
+            }
           ).then((res)=>{
             this.trxRes = res.data;
           }).catch((res)=>{
@@ -159,43 +156,63 @@ export default class TestDAuthWeb extends Vue{
    async checkAuth() {
     const response =  await DAuthWalletManager.checkLoginRedirctUrl({url:window.location.href});
     //window.alert(JSON.stringify(response))
-    console.log("check data ", response.data);
-    if (typeof response.data !== "undefined"){
-      if( response.error === 0){
-        const dauthReponse = {
-          dauthId: response.data.dauthId,
-          accessToken:response.data.dauthAccessToken
-        }
+    console.log("check data ", response);
+    if( response.error === 0){
+        this.loginState = response.data + "登录成功";
+        // DAuthWalletManager.createWallet().then(
+        //   (createRes:any)=>{
+        //     console.log(createRes);
+        //   this.addressText = createRes.data;
+        //   }
+        // ).catch((res)=>{
+        //   if(res.error === -1){
+        //     this.loginState = "请重新登录";
+        //   }
+        //   else{
+        //     window.alert(JSON.stringify(res))
+        //   }
+        // });
 
-        this.dauthID = response.data.dauthId;
-        console.log("check redecrit ", response.data);
-        this.dauthAccessToken = response.data.dauthAccessToken;
-        
-        // DAuthWalletManager.createWallet(dauthReponse).then(
-        //       (createRes:any)=>{
-        //         console.log(createRes);
-        //        this.addressText = createRes.data;
-        //       }
-        //     );
-
-        DAuthWalletManager.queryWalletAddress(dauthReponse).then((res)=>{
+        DAuthWalletManager.queryWalletAddress().then((res)=>{
+          console.log("query address ", res.data)
           this.addressText = res.data;
         }
         ).catch((res)=>{
-          console.log(res);
-          DAuthWalletManager.createWallet(dauthReponse).then(
-              (createRes:any)=>{
-                console.log(createRes);
-              this.addressText = createRes.data;
+          console.log("queryWalletAddress", res);
+          if(res.error === -1){
+            this.loginState = "请重新登录";
+          }
+          else{
+            if(res.error === 0 ){
+              if(res.data === ""){
+                    DAuthWalletManager.createWallet().then(
+                    (createRes:any)=>{
+                      console.log(createRes);
+                    this.addressText = createRes.data;
+                    }
+                  ).catch((res)=>{
+                    if(res.error === -1){
+                      this.loginState = "请重新登录";
+                    }
+                    else{
+                      window.alert(JSON.stringify(res))
+                    }
+                  });
               }
-            );
+              else{
+                window.alert(JSON.stringify(res))
+              }
+            }
+            else{
+              window.alert(JSON.stringify(res))
+            }
+          }
         });
       }
       else{
-        window.alert(JSON.stringify(response));
+        this.loginState = response + "登录失败";
       }
     }
-  }
 }
 </script>
 
