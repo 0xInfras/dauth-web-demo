@@ -39,6 +39,10 @@
       <label>{{ trxRes }}</label>
     </div>
     <div>
+      <button @click="queryUserInfo">查询用户信息</button>
+      <label>{{ userinfoStr }}</label>
+    </div>
+    <div>
       <button @click="logout">退出</button>
     </div>
   </div>
@@ -61,6 +65,8 @@ export default class TestDAuthWeb extends Vue{
    emailStr:string = "";
    emailVcode:string = "";
 
+   userinfoStr :string = "";
+
     startAuth() {
     const info = {
       type: "TWITTER" as TLoginType,
@@ -78,6 +84,20 @@ export default class TestDAuthWeb extends Vue{
       clientSecret:"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"
     }
     DAuthWalletManager.loginWithType(info)
+  }
+
+  queryUserInfo(){
+    DAuthWalletManager.queryUserInfo().then((ret)=>{
+      this.userinfoStr = JSON.stringify(ret.data)
+    }).catch((ret)=>{
+      if(ret.error === -1)
+      {
+        this.loginState = "请重新登录";
+      }
+      else{
+        window.alert(JSON.stringify(ret.data))
+      }
+    })
   }
 
   getEmailVCode(){
