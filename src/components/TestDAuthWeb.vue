@@ -66,11 +66,23 @@
       <input type="text" v-model="bindEmailVcode" placeholder="验证码">
       <button @click="bindEmail">
         绑定
-      </button>`
+      </button>
     </div>
     <div>
       <input type="text" v-model="setPasswordStr" placeholder="设置密码">
       <button @click="setPassword">设置</button>
+    </div>
+    <div>
+      <label>修改密码</label>
+      <input type="text" v-model="restEmailStr" placeholder="请输入邮箱地址">
+      <button @click="getResetEmailVCode">
+          获取验证码
+      </button>
+      <input type="text" v-model="restEmailVcode" placeholder="验证码">
+      <input type="text" v-model="emailNewPwd" placeholder="新密码">
+      <button @click="restPwd">
+        修改
+      </button>
     </div>
     <div>
       <button @click="logout">退出</button>
@@ -85,6 +97,9 @@ import {DAuthWalletManager, TLoginType} from "dauth-web";
 
 @Component
 export default class TestDAuthWeb extends Vue{
+  restEmailStr:string = "";
+  restEmailVcode:string = "";
+  emailNewPwd:string="";
 
    addressText : string = "地址"
    transferAddress : string = ""
@@ -139,6 +154,36 @@ export default class TestDAuthWeb extends Vue{
 
   setPassword(){
     DAuthWalletManager.setPassword({passWord:this.setPasswordStr})
+    .then((ret)=>{
+      window.alert(ret.msg);
+    }).catch((ret)=>{
+      if(ret.error === -1)
+      {
+        this.loginState = "请重新登录";
+      }
+      else{
+        window.alert(JSON.stringify(ret.data));
+      }
+    }
+    );
+  }
+
+  getResetEmailVCode(){
+    DAuthWalletManager.sendEmailVerifyCode({email:this.restEmailStr}).then(()=>{
+      window.alert("验证码获取成功")
+    })
+    .catch(
+      ()=>{
+        window.alert("验证码获取失败")
+      }
+    );
+  }
+
+  restPwd(){
+    DAuthWalletManager.setRecoverPassword({resetPwd:this.emailNewPwd, payload:{
+      account: this.restEmailStr,
+      external: this.restEmailVcode
+    }})
     .then((ret)=>{
       window.alert(ret.msg);
     }).catch((ret)=>{
