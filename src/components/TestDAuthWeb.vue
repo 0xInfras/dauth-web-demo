@@ -58,7 +58,7 @@
       <label>{{ userinfoStr }}</label>
     </div>
     <div>
-      <label>绑定邮箱</label>
+      <label>绑定邮箱:</label>
       <input type="text" v-model="bindEmailStr" placeholder="请输入邮箱地址">
       <button @click="getEmailBindVCode">
           获取验证码
@@ -73,7 +73,7 @@
       <button @click="setPassword">设置</button>
     </div>
     <div>
-      <label>修改密码</label>
+      <label>修改密码:</label>
       <input type="text" v-model="restEmailStr" placeholder="请输入邮箱地址">
       <button @click="getResetEmailVCode">
           获取验证码
