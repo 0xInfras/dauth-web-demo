@@ -92,7 +92,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import {DAuthWalletManager, TLoginType} from "dauth-web";
+import {DAuthWalletManager, TLoginThirdType, TLoginDAuthType} from "dauth-web";
 
 
 @Component
@@ -123,33 +123,31 @@ export default class TestDAuthWeb extends Vue{
 
     startAuth() {
     const info = {
-      type: "TWITTER" as TLoginType,
       clientId: 'Vks1X3E3WVZoTHpXUUx3RGhaNlU6MTpjaQ',
       redirectUri: "https://demos.infras.online/space"
     }
-    DAuthWalletManager.loginWithType(info)
+    DAuthWalletManager.loginWithType("TWITTER", info)
   }
 
   startAuthGoogle() {
-    const info = {
-      type: "GOOGLE" as TLoginType,
+    const data = {
       clientId: '209392989758-j14das5beql07e9ifomltgv3icgiuuvh.apps.googleusercontent.com',
       redirectUri: "http://localhost:3000",
       clientSecret:"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"
     }
-    DAuthWalletManager.loginWithType(info)
+    DAuthWalletManager.loginWithType("GOOGLE", data)
   }
 
   startAuthEmailPassword(){
-    const info = {
-      type: "EMAILPWD" as TLoginType ,
-      redirectUri:"http://localhost:3000",
-      payload:{
+    const payload = {
         account : this.loginEmailStr,
         external : this.emailPassword
-      }
-    };
-    DAuthWalletManager.loginWithType(info)
+      };
+    DAuthWalletManager.loginByMobileOrEmail("EMAILPWD", payload).then((response)=>{
+      this.initLoginStata(response);
+    }).catch((res)=>{
+      window.alert(JSON.stringify(res));
+    })
   }
 
   setPassword(){
@@ -249,15 +247,17 @@ export default class TestDAuthWeb extends Vue{
     );
   }
   startAuthEmailVerCode(){
-    const info = {
-      type: "EMAILVCODE" as TLoginType ,
-      redirectUri:"http://localhost:3000",
-      payload:{
-        account : this.emailStr,
-        external : this.emailVcode
-      }
-    };
-    DAuthWalletManager.loginWithType(info)
+    const payload ={
+          account : this.emailStr,
+          external : this.emailVcode
+        };
+  
+    DAuthWalletManager.loginByMobileOrEmail("EMAILVCODE", payload).then((response)=>{
+      console.log("EMAILVCODE login res", response)
+      this.initLoginStata(response);
+    }).catch((res)=>{
+      window.alert(JSON.stringify(res));
+    })
 }
 
 
@@ -300,6 +300,7 @@ export default class TestDAuthWeb extends Vue{
           });
         }).catch(
           (res)=>{
+            console.log("estimateGas", res);
             window.alert(JSON.stringify( res.data));
           }
         );
@@ -314,10 +315,7 @@ export default class TestDAuthWeb extends Vue{
     this.checkAuth();
   }
 
-   async checkAuth() {
-    const response =  await DAuthWalletManager.checkLoginRedirctUrl({url:window.location.href});
-    //window.alert(JSON.stringify(response))
-    console.log("check data ", response);
+  initLoginStata( response : any ){
     if( response.error === 0){
         this.loginState = response.data + "登录成功";
         // DAuthWalletManager.createWallet().then(
@@ -396,6 +394,13 @@ export default class TestDAuthWeb extends Vue{
         this.loginState = response.data + "登录失败";
       }
     }
+
+   async checkAuth() {
+    const response =  await DAuthWalletManager.checkLoginRedirctUrl({url:window.location.href});
+    //window.alert(JSON.stringify(response))
+    console.log("check data ", response);
+    this.initLoginStata(response);
+   }
 }
 </script>
 
