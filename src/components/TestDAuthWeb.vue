@@ -127,10 +127,10 @@ export default class TestDAuthWeb extends Vue{
 
   startAuthEmailPassword(){
     const info = {
-      type: "EMAIL" as TLoginType ,
+      type: "EMAILPWD" as TLoginType ,
       redirectUri:"http://localhost:3000",
       payload:{
-        account : this.emailStr,
+        account : this.loginEmailStr,
         external : this.emailPassword
       }
     };
@@ -205,7 +205,7 @@ export default class TestDAuthWeb extends Vue{
   }
   startAuthEmailVerCode(){
     const info = {
-      type: "EMAIL" as TLoginType ,
+      type: "EMAILVCODE" as TLoginType ,
       redirectUri:"http://localhost:3000",
       payload:{
         account : this.emailStr,
