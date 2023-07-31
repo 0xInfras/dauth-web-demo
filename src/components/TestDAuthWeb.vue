@@ -73,14 +73,22 @@
       <button @click="setPassword">设置</button>
     </div>
     <div>
-      <label>修改密码:</label>
+      <label>邮箱验证修改密码:</label>
       <input type="text" v-model="restEmailStr" placeholder="请输入邮箱地址">
       <button @click="getResetEmailVCode">
           获取验证码
       </button>
       <input type="text" v-model="restEmailVcode" placeholder="验证码">
       <input type="text" v-model="emailNewPwd" placeholder="新密码">
-      <button @click="restPwd">
+      <button @click="restPwdByVcode">
+        修改
+      </button>
+    </div>
+    <div>
+      <label>原始密码修改密码:</label>
+      <input type="text" v-model="resetOldPassword" placeholder="旧密码">
+      <input type="text" v-model="resetNewPassword" placeholder="新密码">
+      <button @click="restPwdByOldPassword">
         修改
       </button>
     </div>
@@ -121,6 +129,9 @@ export default class TestDAuthWeb extends Vue{
    bindEmailVcode:string="";
    setPasswordStr:string="";
 
+   resetOldPassword:string="";
+   resetNewPassword:string="";
+
     startAuth() {
     const info = {
       clientId: 'Vks1X3E3WVZoTHpXUUx3RGhaNlU6MTpjaQ',
@@ -151,7 +162,7 @@ export default class TestDAuthWeb extends Vue{
   }
 
   setPassword(){
-    DAuthWalletManager.setPassword({passWord:this.setPasswordStr})
+    DAuthWalletManager.setPassword({password:this.setPasswordStr})
     .then((ret)=>{
       window.alert(ret.msg);
     }).catch((ret)=>{
@@ -177,11 +188,23 @@ export default class TestDAuthWeb extends Vue{
     );
   }
 
-  restPwd(){
-    DAuthWalletManager.setRecoverPassword({resetPwd:this.emailNewPwd, payload:{
+  restPwdByVcode(){
+    DAuthWalletManager.setRecoverPassword("EMAILVCODE",{resetPwd:this.emailNewPwd, payload:{
       account: this.restEmailStr,
       external: this.restEmailVcode
     }})
+    .then((ret)=>{
+      window.alert(ret.msg);
+    }).catch((ret)=>{
+        window.alert(JSON.stringify(ret.data));
+    }
+    );
+  }
+
+  restPwdByOldPassword(){
+
+    DAuthWalletManager.setPassword({oldPwd:this.resetOldPassword,
+      password:this.resetNewPassword})
     .then((ret)=>{
       window.alert(ret.msg);
     }).catch((ret)=>{
@@ -194,6 +217,7 @@ export default class TestDAuthWeb extends Vue{
       }
     }
     );
+
   }
 
   bindEmail(){
