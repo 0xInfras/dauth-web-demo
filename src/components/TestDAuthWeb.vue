@@ -50,6 +50,14 @@
         提交
       </button>
     </div>
+    <div>
+      <label>转账给</label>
+      <input type="text" v-model="transferAddressBUSD" placeholder="转出地址">
+      <label>100BUSD</label>
+      <button @click="transferBusd">
+        提交
+      </button>
+    </div>
     <div class="TestDAuthWeb4">
       <label>{{ trxRes }}</label>
     </div>
@@ -100,7 +108,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import {DAuthWalletManager, TLoginThirdType, TLoginDAuthType} from "dauth-web";
+import {DAuthWalletManager, ethers} from "dauth-web";
+import erc20 from "./ERC20.json";
 
 
 @Component
@@ -131,6 +140,8 @@ export default class TestDAuthWeb extends Vue{
 
    resetOldPassword:string="";
    resetNewPassword:string="";
+
+   transferAddressBUSD:string="";
 
     startAuth() {
     const info = {
@@ -296,27 +307,16 @@ export default class TestDAuthWeb extends Vue{
 
   }
 
-   transfer(){
-    console.log("transfer", this.addressText)
-
-    const callData = {
-          toAddress : this.transferAddress,
-          amount:0.001,
-          callData:'0x'
-        };
-
+  doCallTest(callData:any){
     //预估gas
     console.log("trans to ", this.addressText);
     if ("" !== this.addressText){
     DAuthWalletManager.estimateGas(callData).then(
       (gasres)=>{
-        console.log("estmit gas ",gasres.data.verificationGas, gasres.data.callGas )
+        console.log("estmit gas ",gasres.data.verificationGas + 21000*5, gasres.data.callGas )
           //gas预估结果，提交交易
         DAuthWalletManager.execute(callData,
-            {
-              verificationGas:gasres.data.verificationGas,
-              callGas:gasres.data.callGas + 21000 * 1000
-            }
+        gasres.data
           ).then((res)=>{
             this.trxRes = res.data;
           }).catch((res)=>{
@@ -329,6 +329,30 @@ export default class TestDAuthWeb extends Vue{
           }
         );
       }
+  }
+
+   transfer(){
+    console.log("transfer", this.addressText)
+    //this.doCallTest(0.001, "0x");
+    const callData = {
+          toAddress : this.transferAddress,
+          amount:0.001,
+          callData:'0x'
+        };
+
+    this.doCallTest(callData);
+  }
+
+  transferBusd(){
+    console.log("transfer ")
+    const nft = new ethers.utils.Interface(erc20.abi);
+    const callData = {
+      toAddress:"0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4",
+      amount:0,
+      callData:nft.encodeFunctionData("transfer",
+      [ethers.utils.getAddress(this.transferAddressBUSD), 100000000]),
+    }
+    this.doCallTest(callData);
   }
 
   mounted(){
