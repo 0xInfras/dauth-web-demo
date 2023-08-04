@@ -111,7 +111,6 @@ import { Component, Vue } from 'vue-property-decorator';
 import {DAuthWalletManager, ethers} from "dauth-web";
 import erc20 from "./ERC20.json";
 
-
 @Component
 export default class TestDAuthWeb extends Vue{
   restEmailStr:string = "";
@@ -358,7 +357,8 @@ export default class TestDAuthWeb extends Vue{
   mounted(){
     DAuthWalletManager.initSDK({appId: "1bfe5bbf619681e49cdc62d07badc4cb",
     sdkVersion:"1.2.2",
-    serverTag:"test"
+    serverTag:"test",
+    chainType:"ArbitrumGoerli"
   });
     this.checkAuth();
   }
@@ -394,16 +394,16 @@ export default class TestDAuthWeb extends Vue{
               window.alert(JSON.stringify(res.data))
             }
           });
-          DAuthWalletManager.queryWalletERC20("0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4").then((ret)=>{
-            this.usdtText = ret.data.toString();
-          }).catch((ret)=>{
-            if(ret.error === -1){
-              this.loginState = "请重新登录";
-            }
-            else{
-              window.alert(JSON.stringify(res.data))
-            }
-          });
+          // DAuthWalletManager.queryWalletERC20("0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4").then((ret)=>{
+          //   this.usdtText = ret.data.toString();
+          // }).catch((ret)=>{
+          //   if(ret.error === -1){
+          //     this.loginState = "请重新登录";
+          //   }
+          //   else{
+          //     window.alert(JSON.stringify(res.data))
+          //   }
+          // });
 
         }
         ).catch((res)=>{
