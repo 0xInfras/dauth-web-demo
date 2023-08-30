@@ -24,6 +24,17 @@
       </button>
     </div>
     <div>
+      <input type="text" v-model="phoneAreaCode" />
+      <input type="text" v-model="phoneStr" placeholder="请输入手机号">
+      <button @click="getPhoneVCode">
+        获取验证码
+      </button>
+      <input type="text" v-model="phoneCode" placeholder="验证码">
+      <button @click="startAuthPhoneVerCode">
+        登录
+      </button>
+    </div>
+    <div>
       <input type="text" v-model="loginEmailStr" placeholder="请输入邮箱地址">
       <input type="password" v-model="emailPassword" placeholder="密码">
       <button @click="startAuthEmailPassword">
@@ -141,6 +152,10 @@ export default class TestDAuthWeb extends Vue{
    resetNewPassword:string="";
 
    transferAddressBUSD:string="";
+
+   phoneStr:string="";
+   phoneCode:string="";
+   phoneAreaCode:string="86"
 
     startAuth() {
     const info = {
@@ -260,8 +275,21 @@ export default class TestDAuthWeb extends Vue{
     })
   }
 
+
   getEmailVCode(){
     DAuthWalletManager.sendEmailVerifyCode({email:this.emailStr}).then(()=>{
+      window.alert("验证码获取成功")
+    })
+    .catch(
+      ()=>{
+        window.alert("验证码获取失败")
+      }
+    );
+  }
+
+  getPhoneVCode(){
+    DAuthWalletManager.sendPhoneVerifyCode({phone:this.phoneStr,
+      areaCode:this.phoneAreaCode}).then(()=>{
       window.alert("验证码获取成功")
     })
     .catch(
@@ -294,6 +322,21 @@ export default class TestDAuthWeb extends Vue{
     })
 }
 
+startAuthPhoneVerCode(){
+  const payload ={
+          account : this.phoneStr,
+          external : this.phoneCode,
+          areaCode:this.phoneAreaCode
+        };
+  
+    DAuthWalletManager.loginByMobileOrEmail("PHONEVCODE", payload).then((response)=>{
+      console.log("PHONEVCODE login res", response)
+      this.initLoginStata(response);
+    }).catch((res)=>{
+      window.alert(JSON.stringify(res));
+    })
+}
+
 
   logout(){
     DAuthWalletManager.logout().then(()=>{
@@ -312,7 +355,7 @@ export default class TestDAuthWeb extends Vue{
     if ("" !== this.addressText){
     DAuthWalletManager.estimateGas(callData).then(
       (gasres)=>{
-        console.log("estmit gas ",gasres.data.verificationGas + 21000*5, gasres.data.callGas )
+        console.log("estmit gas ",gasres.data.verificationGas, gasres.data.callGas )
           //gas预估结果，提交交易
         DAuthWalletManager.execute(callData,
         gasres.data
@@ -359,14 +402,18 @@ export default class TestDAuthWeb extends Vue{
     sdkVersion:"1.2.2",
     serverTag:"test",
     chainType:"ArbitrumGoerli"
+    // DAuthWalletManager.initSDK({appId: "430f220f2a6554040849863e04ba5187",
+    // sdkVersion:"1.2.2",
+    // serverTag:"prod",
+    // chainType:"Arbitrum"
   });
     this.checkAuth();
   }
 
-  initLoginStata( response : any ){
+  async initLoginStata( response : any ){
     if( response.error === 0){
         this.loginState = response.data + "登录成功";
-        // DAuthWalletManager.createWallet().then(
+        // await DAuthWalletManager.createWallet().then(
         //   (createRes:any)=>{
         //     console.log(createRes);
         //   this.addressText = createRes.data;
@@ -376,6 +423,7 @@ export default class TestDAuthWeb extends Vue{
         //     this.loginState = "请重新登录";
         //   }
         //   else{
+        //     console.log("createWallet error",res)
         //     window.alert(JSON.stringify(res))
         //   }
         // });
@@ -394,16 +442,16 @@ export default class TestDAuthWeb extends Vue{
               window.alert(JSON.stringify(res.data))
             }
           });
-          // DAuthWalletManager.queryWalletERC20("0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4").then((ret)=>{
-          //   this.usdtText = ret.data.toString();
-          // }).catch((ret)=>{
-          //   if(ret.error === -1){
-          //     this.loginState = "请重新登录";
-          //   }
-          //   else{
-          //     window.alert(JSON.stringify(res.data))
-          //   }
-          // });
+          DAuthWalletManager.queryWalletERC20("0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4").then((ret)=>{
+            this.usdtText = ret.data.toString();
+          }).catch((ret)=>{
+            if(ret.error === -1){
+              this.loginState = "请重新登录";
+            }
+            else{
+              window.alert(JSON.stringify(res.data))
+            }
+          });
 
         }
         ).catch((res)=>{
@@ -414,19 +462,19 @@ export default class TestDAuthWeb extends Vue{
           else{
             if(res.error === 0 ){
               if(res.data === ""){
-                    DAuthWalletManager.createWallet().then(
-                    (createRes:any)=>{
-                      console.log(createRes);
-                    this.addressText = createRes.data;
-                    }
-                  ).catch((res)=>{
-                    if(res.error === -1){
-                      this.loginState = "请重新登录";
-                    }
-                    else{
-                      window.alert(JSON.stringify(res.data))
-                    }
-                  });
+                  //   DAuthWalletManager.createWallet().then(
+                  //   (createRes:any)=>{
+                  //     console.log(createRes);
+                  //   this.addressText = createRes.data;
+                  //   }
+                  // ).catch((res)=>{
+                  //   if(res.error === -1){
+                  //     this.loginState = "请重新登录";
+                  //   }
+                  //   else{
+                  //     window.alert(JSON.stringify(res.data))
+                  //   }
+                  // });
               }
               else{
                 window.alert(JSON.stringify(res))
