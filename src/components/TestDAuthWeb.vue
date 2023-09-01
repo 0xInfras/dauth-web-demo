@@ -462,19 +462,19 @@ startAuthPhoneVerCode(){
           else{
             if(res.error === 0 ){
               if(res.data === ""){
-                  //   DAuthWalletManager.createWallet().then(
-                  //   (createRes:any)=>{
-                  //     console.log(createRes);
-                  //   this.addressText = createRes.data;
-                  //   }
-                  // ).catch((res)=>{
-                  //   if(res.error === -1){
-                  //     this.loginState = "请重新登录";
-                  //   }
-                  //   else{
-                  //     window.alert(JSON.stringify(res.data))
-                  //   }
-                  // });
+                    DAuthWalletManager.createWallet().then(
+                    (createRes:any)=>{
+                      console.log(createRes);
+                    this.addressText = createRes.data;
+                    }
+                  ).catch((res)=>{
+                    if(res.error === -1){
+                      this.loginState = "请重新登录";
+                    }
+                    else{
+                      window.alert(JSON.stringify(res.data))
+                    }
+                  });
               }
               else{
                 window.alert(JSON.stringify(res))
