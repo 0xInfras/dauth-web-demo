@@ -13,7 +13,7 @@
     "console": "^0.7.2",
     "core-js": "^3.6.5",
     "crypto-js": "^4.1.1",
-    "dauth-web": "../dauth-web",
+    "dauth-web": "0.1.8",
     "less": "^3.0.4",
     "less-loader": "^5.0.0",
     "vue": "^2.6.11",
