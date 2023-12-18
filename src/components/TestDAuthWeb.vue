@@ -123,75 +123,77 @@
 import { Options, Vue } from 'vue-class-component';
 import { DAuthWalletManager, ethers } from "dauth-web";
 import erc20 from "./ERC20.json";
+import { computed, mergeProps } from 'vue';
 
-@Options({
-  props: {
-    restEmailStr: String,
-    restEmailVcode: String,
-    emailNewPwd: String,
+// @Options({
+//   props: {
+//     restEmailStr: String,
+//     restEmailVcode: String,
+//     emailNewPwd: String,
 
-    addressText: String,
-    transferAddress: String,
-    trxRes: String,
+//     addressText: String,
+//     transferAddress: String,
+//     trxRes: String,
 
-    loginState: String,
+//     loginState: String,
 
-    emailStr: String,
-    emailVcode: String,
-    userinfoStr: String,
-    banlanceText: String,
-    usdtText: String,
+//     emailStr: String,
+//     emailVcode: String,
+//     userinfoStr: String,
+//     banlanceText: String,
+//     usdtText: String,
 
-    loginEmailStr: String,
-    bindEmailStr: String,
-    emailPassword: String,
+//     loginEmailStr: String,
+//     bindEmailStr: String,
+//     emailPassword: String,
 
-    bindEmailVcode: String,
-    setPasswordStr: String,
+//     bindEmailVcode: String,
+//     setPasswordStr: String,
 
-    resetOldPassword: String,
-    resetNewPassword: String,
+//     resetOldPassword: String,
+//     resetNewPassword: String,
 
-    transferAddressBUSD: String,
+//     transferAddressBUSD: String,
 
-    phoneStr: String,
-    phoneCode: String,
-    phoneAreaCode: String,
-  }
-})
+//     phoneStr: String,
+//     phoneCode: String,
+//     phoneAreaCode: String,
+//   }
+// })
 export default class TestDAuthWeb extends Vue {
-  restEmailStr!: string
-  restEmailVcode!: string
-  emailNewPwd!: string
+  restEmailStr = ""
+  restEmailVcode =""
+  emailNewPwd=""
 
-  addressText !: string
-  transferAddress !: string
-  trxRes !: string
+  addressText="地址"
+  transferAddress =""
+  trxRes=""
 
-  loginState !: string
+  loginState ="未登录"
 
-  emailStr!: string
-  emailVcode!: string
+  emailStr=""
+  emailVcode=""
 
-  userinfoStr !: string
-  banlanceText!: string
-  usdtText!: string
+  userinfoStr =""
+  banlanceText=""
+  usdtText=""
 
-  loginEmailStr!: string
-  bindEmailStr!: string
-  emailPassword!: string
+  loginEmailStr=""
+  bindEmailStr =""
 
-  bindEmailVcode!: string
-  setPasswordStr!: string
+  emailPassword=""
 
-  resetOldPassword!: string
-  resetNewPassword!: string
+  bindEmailVcode=""
+  setPasswordStr=""
 
-  transferAddressBUSD!: string
+  resetOldPassword=""
+  resetNewPassword=""
 
-  phoneStr!: string
-  phoneCode!: string
-  phoneAreaCode!: string
+  transferAddressBUSD=""
+
+  phoneStr=""
+  phoneCode=""
+  phoneAreaCode="86"
 
   startAuth() {
     const info = {
@@ -204,13 +206,13 @@ export default class TestDAuthWeb extends Vue {
   startAuthGoogle() {
     const data = {
       clientId: '209392989758-j14das5beql07e9ifomltgv3icgiuuvh.apps.googleusercontent.com',
-      redirectUri: "http://localhost:3000",
+      redirectUri: "https://localhost:3000",
       clientSecret: "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"
     }
     DAuthWalletManager.loginWithType("GOOGLE", data)
   }
   startTgLogin() {
-    DAuthWalletManager.loginWithType("TELEGRAM", { redirectUri: "/#/tglogin" })
+    DAuthWalletManager.loginWithType("TELEGRAM", { redirectUri: "https://localhost:3000" })
   }
   startAuthEmailPassword() {
     const payload = {
@@ -533,10 +535,15 @@ export default class TestDAuthWeb extends Vue {
   }
 
   async checkAuth() {
-    const response = await DAuthWalletManager.checkLoginRedirctUrl({ url: window.location.href });
-    //window.alert(JSON.stringify(response))
-    console.log("check data ", response);
-    this.initLoginStata(response);
+    try{
+      const response = await DAuthWalletManager.checkLoginRedirctUrl({ url: window.location.href });
+      //window.alert(JSON.stringify(response))
+      console.log("check data ", response);
+      this.initLoginStata(response);
+    }
+    catch (err){
+      console.log(err)
+    }
   }
 }
 </script>

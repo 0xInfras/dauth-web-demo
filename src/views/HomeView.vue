@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <img alt="Vue logo" src="../assets/logo.png">
-    <TestDAuthWeb addressText="地址" trxRes="交易结果" loginState="未登录" phoneAreaCode="86"></TestDAuthWeb>
+    <TestDAuthWeb></TestDAuthWeb>
   </div>
 </template>
 

@@ -2,7 +2,7 @@
 <template>
   <div>
     <label>Telegram登录</label>
-    <iframe src="/tgLogin.html" width="100%" height="500px" frameborder="0" align="center" />
+    <iframe src="/static/tgLogin.html" width="100%" height="500px" frameborder="0" align="center" />
   </div>
 </template>
   

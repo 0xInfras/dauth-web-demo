@@ -13,11 +13,6 @@ const routes: Array<RouteRecordRaw> = [
     component: HomeView
   },
   {
-    path: '/tglogin',
-    name: 'tglogin',
-    component: TgLoginView
-  },
-  {
     path: '/about',
     name: 'about',
     // route level code-splitting
