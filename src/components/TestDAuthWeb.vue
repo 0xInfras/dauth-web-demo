@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/no-parsing-error -->
 <template>
   <div>
     <div>
@@ -11,6 +10,9 @@
       </button>
       <button @click="startAuthGoogle">
         发起Google登录授权
+      </button>
+      <button @click="startTgLogin">
+        发起Telegram登录授权
       </button>
     </div>
     <div>
@@ -80,7 +82,7 @@
       <label>绑定邮箱:</label>
       <input type="text" v-model="bindEmailStr" placeholder="请输入邮箱地址">
       <button @click="getEmailBindVCode">
-          获取验证码
+        获取验证码
       </button>
       <input type="text" v-model="bindEmailVcode" placeholder="验证码">
       <button @click="bindEmail">
@@ -95,7 +97,7 @@
       <label>邮箱验证修改密码:</label>
       <input type="text" v-model="restEmailStr" placeholder="请输入邮箱地址">
       <button @click="getResetEmailVCode">
-          获取验证码
+        获取验证码
       </button>
       <input type="text" v-model="restEmailVcode" placeholder="验证码">
       <input type="text" v-model="emailNewPwd" placeholder="新密码">
@@ -118,46 +120,80 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import {DAuthWalletManager, ethers} from "dauth-web";
+import { Options, Vue } from 'vue-class-component';
+import { DAuthWalletManager, ethers } from "dauth-web";
 import erc20 from "./ERC20.json";
 
-@Component
-export default class TestDAuthWeb extends Vue{
-  restEmailStr:string = "";
-  restEmailVcode:string = "";
-  emailNewPwd:string="";
+@Options({
+  props: {
+    restEmailStr: String,
+    restEmailVcode: String,
+    emailNewPwd: String,
 
-   addressText : string = "地址"
-   transferAddress : string = ""
-   trxRes : string = "交易结果";
+    addressText: String,
+    transferAddress: String,
+    trxRes: String,
 
-   loginState : string = "未登录";
+    loginState: String,
 
-   emailStr:string = "";
-   emailVcode:string = "";
+    emailStr: String,
+    emailVcode: String,
+    userinfoStr: String,
+    banlanceText: String,
+    usdtText: String,
 
-   userinfoStr :string = "";
-   banlanceText:string = "";
-   usdtText:string= "";
+    loginEmailStr: String,
+    bindEmailStr: String,
+    emailPassword: String,
 
-   loginEmailStr:string="";
-   bindEmailStr:string= "";
-   emailPassword:string="";
+    bindEmailVcode: String,
+    setPasswordStr: String,
 
-   bindEmailVcode:string="";
-   setPasswordStr:string="";
+    resetOldPassword: String,
+    resetNewPassword: String,
 
-   resetOldPassword:string="";
-   resetNewPassword:string="";
+    transferAddressBUSD: String,
 
-   transferAddressBUSD:string="";
+    phoneStr: String,
+    phoneCode: String,
+    phoneAreaCode: String,
+  }
+})
+export default class TestDAuthWeb extends Vue {
+  restEmailStr!: string
+  restEmailVcode!: string
+  emailNewPwd!: string
 
-   phoneStr:string="";
-   phoneCode:string="";
-   phoneAreaCode:string="86"
+  addressText !: string
+  transferAddress !: string
+  trxRes !: string
 
-    startAuth() {
+  loginState !: string
+
+  emailStr!: string
+  emailVcode!: string
+
+  userinfoStr !: string
+  banlanceText!: string
+  usdtText!: string
+
+  loginEmailStr!: string
+  bindEmailStr!: string
+  emailPassword!: string
+
+  bindEmailVcode!: string
+  setPasswordStr!: string
+
+  resetOldPassword!: string
+  resetNewPassword!: string
+
+  transferAddressBUSD!: string
+
+  phoneStr!: string
+  phoneCode!: string
+  phoneAreaCode!: string
+
+  startAuth() {
     const info = {
       clientId: 'Vks1X3E3WVZoTHpXUUx3RGhaNlU6MTpjaQ',
       redirectUri: "https://demos.infras.online/space"
@@ -169,337 +205,358 @@ export default class TestDAuthWeb extends Vue{
     const data = {
       clientId: '209392989758-j14das5beql07e9ifomltgv3icgiuuvh.apps.googleusercontent.com',
       redirectUri: "http://localhost:3000",
-      clientSecret:"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"
+      clientSecret: "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"
     }
     DAuthWalletManager.loginWithType("GOOGLE", data)
   }
-
-  startAuthEmailPassword(){
+  startTgLogin() {
+    DAuthWalletManager.loginWithType("TELEGRAM", { redirectUri: "/#/tglogin" })
+  }
+  startAuthEmailPassword() {
     const payload = {
-        account : this.loginEmailStr,
-        external : this.emailPassword
-      };
-    DAuthWalletManager.loginByMobileOrEmail("EMAILPWD", payload).then((response)=>{
+      account: this.loginEmailStr,
+      external: this.emailPassword
+    };
+    DAuthWalletManager.loginByMobileOrEmail("EMAILPWD", payload).then((response) => {
       this.initLoginStata(response);
-    }).catch((res)=>{
+    }).catch((res) => {
       window.alert(JSON.stringify(res));
     })
   }
 
-  setPassword(){
-    DAuthWalletManager.setPassword({password:this.setPasswordStr})
-    .then((ret)=>{
-      window.alert(ret.msg);
-    }).catch((ret)=>{
-      if(ret.error === -1)
-      {
-        this.loginState = "请重新登录";
+  setPassword() {
+    DAuthWalletManager.setPassword({ password: this.setPasswordStr })
+      .then((ret) => {
+        window.alert(ret.msg);
+      }).catch((ret) => {
+        if (ret.error === -1) {
+          this.loginState = "请重新登录";
+        }
+        else {
+          window.alert(JSON.stringify(ret.data));
+        }
       }
-      else{
-        window.alert(JSON.stringify(ret.data));
-      }
-    }
-    );
+      );
   }
 
-  getResetEmailVCode(){
-    DAuthWalletManager.sendEmailVerifyCode({email:this.restEmailStr}).then(()=>{
+  getResetEmailVCode() {
+    DAuthWalletManager.sendEmailVerifyCode({ email: this.restEmailStr }).then(() => {
       window.alert("验证码获取成功")
     })
-    .catch(
-      ()=>{
-        window.alert("验证码获取失败")
-      }
-    );
+      .catch(
+        () => {
+          window.alert("验证码获取失败")
+        }
+      );
   }
 
-  restPwdByVcode(){
-    DAuthWalletManager.setRecoverPassword("EMAILVCODE",{resetPwd:this.emailNewPwd, payload:{
-      account: this.restEmailStr,
-      external: this.restEmailVcode
-    }})
-    .then((ret)=>{
-      window.alert(ret.msg);
-    }).catch((ret)=>{
-        window.alert(JSON.stringify(ret.data));
-    }
-    );
-  }
-
-  restPwdByOldPassword(){
-
-    DAuthWalletManager.setPassword({oldPwd:this.resetOldPassword,
-      password:this.resetNewPassword})
-    .then((ret)=>{
-      window.alert(ret.msg);
-    }).catch((ret)=>{
-      if(ret.error === -1)
-      {
-        this.loginState = "请重新登录";
+  restPwdByVcode() {
+    DAuthWalletManager.setRecoverPassword("EMAILVCODE", {
+      resetPwd: this.emailNewPwd, payload: {
+        account: this.restEmailStr,
+        external: this.restEmailVcode
       }
-      else{
+    })
+      .then((ret) => {
+        window.alert(ret.msg);
+      }).catch((ret) => {
         window.alert(JSON.stringify(ret.data));
       }
-    }
-    );
+      );
+  }
+
+  restPwdByOldPassword() {
+
+    DAuthWalletManager.setPassword({
+      oldPwd: this.resetOldPassword,
+      password: this.resetNewPassword
+    })
+      .then((ret) => {
+        window.alert(ret.msg);
+      }).catch((ret) => {
+        if (ret.error === -1) {
+          this.loginState = "请重新登录";
+        }
+        else {
+          window.alert(JSON.stringify(ret.data));
+        }
+      }
+      );
 
   }
 
-  bindEmail(){
-    DAuthWalletManager.bindEmail({email:this.bindEmailStr, verifyCode:this.bindEmailVcode})
-    .then((ret)=>{
-      window.alert(ret.msg);
-    }).catch((ret)=>{
-      if(ret.error === -1)
-      {
-        this.loginState = "请重新登录";
+  bindEmail() {
+    DAuthWalletManager.bindEmail({ email: this.bindEmailStr, verifyCode: this.bindEmailVcode })
+      .then((ret) => {
+        window.alert(ret.msg);
+      }).catch((ret) => {
+        if (ret.error === -1) {
+          this.loginState = "请重新登录";
+        }
+        else {
+          window.alert(JSON.stringify(ret.data));
+        }
       }
-      else{
-        window.alert(JSON.stringify(ret.data));
-      }
-    }
-    );
+      );
   }
 
-  queryUserInfo(){
-    DAuthWalletManager.queryUserInfo().then((ret)=>{
+  queryUserInfo() {
+    DAuthWalletManager.queryUserInfo().then((ret) => {
       this.userinfoStr = JSON.stringify(ret.data)
-    }).catch((ret)=>{
-      if(ret.error === -1)
-      {
+    }).catch((ret) => {
+      if (ret.error === -1) {
         this.loginState = "请重新登录";
       }
-      else{
+      else {
         window.alert(JSON.stringify(ret.data))
       }
     })
   }
 
 
-  getEmailVCode(){
-    DAuthWalletManager.sendEmailVerifyCode({email:this.emailStr}).then(()=>{
+  getEmailVCode() {
+    DAuthWalletManager.sendEmailVerifyCode({ email: this.emailStr }).then(() => {
       window.alert("验证码获取成功")
     })
-    .catch(
-      ()=>{
-        window.alert("验证码获取失败")
-      }
-    );
+      .catch(
+        () => {
+          window.alert("验证码获取失败")
+        }
+      );
   }
 
-  getPhoneVCode(){
-    DAuthWalletManager.sendPhoneVerifyCode({phone:this.phoneStr,
-      areaCode:this.phoneAreaCode}).then(()=>{
+  getPhoneVCode() {
+    DAuthWalletManager.sendPhoneVerifyCode({
+      phone: this.phoneStr,
+      areaCode: this.phoneAreaCode
+    }).then(() => {
       window.alert("验证码获取成功")
     })
-    .catch(
-      ()=>{
-        window.alert("验证码获取失败")
-      }
-    );
+      .catch(
+        () => {
+          window.alert("验证码获取失败")
+        }
+      );
   }
-  getEmailBindVCode(){
-    DAuthWalletManager.sendEmailVerifyCode({email:this.bindEmailStr}).then(()=>{
+  getEmailBindVCode() {
+    DAuthWalletManager.sendEmailVerifyCode({ email: this.bindEmailStr }).then(() => {
       window.alert("验证码获取成功")
     })
-    .catch(
-      ()=>{
-        window.alert("验证码获取失败")
-      }
-    );
+      .catch(
+        () => {
+          window.alert("验证码获取失败")
+        }
+      );
   }
-  startAuthEmailVerCode(){
-    const payload ={
-          account : this.emailStr,
-          external : this.emailVcode
-        };
-  
-    DAuthWalletManager.loginByMobileOrEmail("EMAILVCODE", payload).then((response)=>{
+  startAuthEmailVerCode() {
+    const payload = {
+      account: this.emailStr,
+      external: this.emailVcode
+    };
+
+    DAuthWalletManager.loginByMobileOrEmail("EMAILVCODE", payload).then((response) => {
       console.log("EMAILVCODE login res", response)
       this.initLoginStata(response);
-    }).catch((res)=>{
+    }).catch((res) => {
       window.alert(JSON.stringify(res));
     })
-}
+  }
 
-startAuthPhoneVerCode(){
-  const payload ={
-          account : this.phoneStr,
-          external : this.phoneCode,
-          areaCode:this.phoneAreaCode
-        };
-  
-    DAuthWalletManager.loginByMobileOrEmail("PHONEVCODE", payload).then((response)=>{
+  startAuthPhoneVerCode() {
+    const payload = {
+      account: this.phoneStr,
+      external: this.phoneCode,
+      areaCode: this.phoneAreaCode
+    };
+
+    DAuthWalletManager.loginByMobileOrEmail("PHONEVCODE", payload).then((response) => {
       console.log("PHONEVCODE login res", response)
       this.initLoginStata(response);
-    }).catch((res)=>{
+    }).catch((res) => {
       window.alert(JSON.stringify(res));
     })
-}
+  }
 
 
-  logout(){
-    DAuthWalletManager.logout().then(()=>{
+  logout() {
+    DAuthWalletManager.logout().then(() => {
       this.addressText = "地址";
       window.alert("退出成功");
     }
-    ).catch((ret)=>{
+    ).catch((ret) => {
       window.alert("退出失败" + JSON.stringify(ret));
     })
 
   }
 
-  doCallTest(callData:any){
+  doCallTest(callData: any) {
     //预估gas
     console.log("trans to ", this.addressText);
-    if ("" !== this.addressText){
-    DAuthWalletManager.estimateGas(callData).then(
-      (gasres)=>{
-        console.log("estmit gas ",gasres.data.verificationGas, gasres.data.callGas )
+    if ("" !== this.addressText) {
+      DAuthWalletManager.estimateGas(callData).then(
+        (gasres) => {
+          console.log("estmit gas ", gasres.data.verificationGas, gasres.data.callGas)
           //gas预估结果，提交交易
-        DAuthWalletManager.execute(callData,
-        gasres.data
-          ).then((res)=>{
+          DAuthWalletManager.execute(callData,
+            gasres.data
+          ).then((res) => {
             this.trxRes = res.data;
-          }).catch((res)=>{
-            window.alert(JSON.stringify( res.data));
+          }).catch((res) => {
+            window.alert(JSON.stringify(res.data));
           });
         }).catch(
-          (res)=>{
+          (res) => {
             console.log("estimateGas", res);
-            window.alert(JSON.stringify( res.data));
+            window.alert(JSON.stringify(res.data));
           }
         );
-      }
+    }
   }
 
-   transfer(){
+  transfer() {
     console.log("transfer", this.addressText)
     //this.doCallTest(0.001, "0x");
     const callData = {
-          toAddress : this.transferAddress,
-          amount:0.001,
-          callData:'0x'
-        };
+      toAddress: this.transferAddress,
+      amount: 0.001,
+      callData: '0x'
+    };
 
     this.doCallTest(callData);
   }
 
-  transferBusd(){
+  transferBusd() {
     console.log("transfer ")
     const nft = new ethers.utils.Interface(erc20.abi);
     const callData = {
-      toAddress:"0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4",
-      amount:0,
-      callData:nft.encodeFunctionData("transfer",
-      [ethers.utils.getAddress(this.transferAddressBUSD), 100000000]),
+      toAddress: "0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4",
+      amount: 0,
+      callData: nft.encodeFunctionData("transfer",
+        [ethers.utils.getAddress(this.transferAddressBUSD), 100000000]),
     }
     this.doCallTest(callData);
   }
 
-  mounted(){
-    DAuthWalletManager.initSDK({appId: "1bfe5bbf619681e49cdc62d07badc4cb",
-    sdkVersion:"1.2.2",
-    serverTag:"test",
-    chainType:"ArbitrumGoerli"
-    // DAuthWalletManager.initSDK({appId: "430f220f2a6554040849863e04ba5187",
-    // sdkVersion:"1.2.2",
-    // serverTag:"prod",
-    // chainType:"Arbitrum"
-  });
+  mounted() {
+    DAuthWalletManager.initSDK({
+      appId: "1bfe5bbf619681e49cdc62d07badc4cb",
+      sdkVersion: "1.2.2",
+      serverTag: "test",
+      chainType: "ArbitrumGoerli"
+      // DAuthWalletManager.initSDK({appId: "430f220f2a6554040849863e04ba5187",
+      // sdkVersion:"1.2.2",
+      // serverTag:"prod",
+      // chainType:"Arbitrum"
+    });
     this.checkAuth();
   }
 
-  async initLoginStata( response : any ){
-    if( response.error === 0){
-        this.loginState = response.data + "登录成功";
-        // await DAuthWalletManager.createWallet().then(
-        //   (createRes:any)=>{
-        //     console.log(createRes);
-        //   this.addressText = createRes.data;
-        //   }
-        // ).catch((res)=>{
-        //   if(res.error === -1){
-        //     this.loginState = "请重新登录";
-        //   }
-        //   else{
-        //     console.log("createWallet error",res)
-        //     window.alert(JSON.stringify(res))
-        //   }
-        // });
+  async initLoginStata(response: any) {
+    if (response.error === 0) {
+      this.loginState = response.data + "登录成功";
+      // await DAuthWalletManager.createWallet().then(
+      //   (createRes:any)=>{
+      //     console.log(createRes);
+      //   this.addressText = createRes.data;
+      //   }
+      // ).catch((res)=>{
+      //   if(res.error === -1){
+      //     this.loginState = "请重新登录";
+      //   }
+      //   else{
+      //     console.log("createWallet error",res)
+      //     window.alert(JSON.stringify(res))
+      //   }
+      // });
 
-        DAuthWalletManager.queryWalletAddress().then((res)=>{
-          console.log("query address ", res.data)
-          this.addressText = res.data;
-          this.banlanceText = "0"
-          DAuthWalletManager.queryWalletBalance().then((ret)=>{
-            this.banlanceText = ret.data.toString();
-          }).catch((ret)=>{
-            if(ret.error === -1){
-              this.loginState = "请重新登录";
-            }
-            else{
-              window.alert(JSON.stringify(res.data))
-            }
-          });
-          DAuthWalletManager.queryWalletERC20("0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4").then((ret)=>{
-            this.usdtText = ret.data.toString();
-          }).catch((ret)=>{
-            if(ret.error === -1){
-              this.loginState = "请重新登录";
-            }
-            else{
-              window.alert(JSON.stringify(res.data))
-            }
-          });
-
-        }
-        ).catch((res)=>{
-          console.log("queryWalletAddress", res);
-          if(res.error === -1){
+      DAuthWalletManager.queryWalletAddress().then((res) => {
+        console.log("query address ", res.data)
+        this.addressText = res.data;
+        this.banlanceText = "0"
+        DAuthWalletManager.queryWalletBalance().then((ret) => {
+          this.banlanceText = ret.data.toString();
+        }).catch((ret) => {
+          if (ret.error === -1) {
             this.loginState = "请重新登录";
           }
-          else{
-            if(res.error === 0 ){
-              if(res.data === ""){
-                    DAuthWalletManager.createWallet().then(
-                    (createRes:any)=>{
-                      console.log(createRes);
-                    this.addressText = createRes.data;
-                    }
-                  ).catch((res)=>{
-                    if(res.error === -1){
-                      this.loginState = "请重新登录";
-                    }
-                    else{
-                      window.alert(JSON.stringify(res.data))
-                    }
-                  });
-              }
-              else{
-                window.alert(JSON.stringify(res))
-              }
+          else {
+            window.alert(JSON.stringify(res.data))
+          }
+        });
+        DAuthWalletManager.queryWalletERC20("0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4").then((ret) => {
+          this.usdtText = ret.data.toString();
+        }).catch((ret) => {
+          if (ret.error === -1) {
+            this.loginState = "请重新登录";
+          }
+          else {
+            window.alert(JSON.stringify(res.data))
+          }
+        });
+
+      }
+      ).catch((res) => {
+        console.log("queryWalletAddress", res);
+        if (res.error === -1) {
+          this.loginState = "请重新登录";
+        }
+        else {
+          if (res.error === 0) {
+            if (res.data === "") {
+              DAuthWalletManager.createWallet().then(
+                (createRes: any) => {
+                  console.log(createRes);
+                  this.addressText = createRes.data;
+                }
+              ).catch((res) => {
+                if (res.error === -1) {
+                  this.loginState = "请重新登录";
+                }
+                else {
+                  window.alert(JSON.stringify(res.data))
+                }
+              });
             }
-            else{
+            else {
               window.alert(JSON.stringify(res))
             }
           }
-        });
-      }
-      else{
-        this.loginState = response.data + "登录失败";
-      }
+          else {
+            window.alert(JSON.stringify(res))
+          }
+        }
+      });
     }
+    else {
+      this.loginState = response.data + "登录失败";
+    }
+  }
 
-   async checkAuth() {
-    const response =  await DAuthWalletManager.checkLoginRedirctUrl({url:window.location.href});
+  async checkAuth() {
+    const response = await DAuthWalletManager.checkLoginRedirctUrl({ url: window.location.href });
     //window.alert(JSON.stringify(response))
     console.log("check data ", response);
     this.initLoginStata(response);
-   }
+  }
 }
 </script>
 
-<style lang="less" scoped>
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+h3 {
+  margin: 40px 0 0;
+}
 
-</style>
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+a {
+  color: #42b983;
+}</style>
