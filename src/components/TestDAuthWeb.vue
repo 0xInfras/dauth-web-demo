@@ -445,7 +445,7 @@ export default class TestDAuthWeb extends Vue {
       sdkVersion: "1.2.2",
       serverTag: "test",
       chainType: "ArbitrumGoerli"
-      // DAuthWalletManager.initSDK({appId: "430f220f2a6554040849863e04ba5187",
+      // appId: "430f220f2a6554040849863e04ba5187",
       // sdkVersion:"1.2.2",
       // serverTag:"prod",
       // chainType:"Arbitrum"
