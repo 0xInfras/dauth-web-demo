@@ -1,118 +1,154 @@
 <template>
   <div>
-    <div>
-      <label>当前登录状态：</label>
-      <label>{{ loginState }}</label>
-    </div>
-    <div class="TestDAuthWeb1">
-      <button @click="startAuth">
-        发起Twitter登录授权
-      </button>
-      <button @click="startAuthGoogle">
-        发起Google登录授权
-      </button>
-      <button @click="startTgLogin">
-        发起Telegram登录授权
-      </button>
-    </div>
-    <div>
-      <input type="text" v-model="emailStr" placeholder="请输入邮箱地址">
-      <button @click="getEmailVCode">
-        获取验证码
-      </button>
-      <input type="text" v-model="emailVcode" placeholder="验证码">
-      <button @click="startAuthEmailVerCode">
-        登录
-      </button>
-    </div>
-    <div>
-      <input type="text" v-model="phoneAreaCode" />
-      <input type="text" v-model="phoneStr" placeholder="请输入手机号">
-      <button @click="getPhoneVCode">
-        获取验证码
-      </button>
-      <input type="text" v-model="phoneCode" placeholder="验证码">
-      <button @click="startAuthPhoneVerCode">
-        登录
-      </button>
-    </div>
-    <div>
-      <input type="text" v-model="loginEmailStr" placeholder="请输入邮箱地址">
-      <input type="password" v-model="emailPassword" placeholder="密码">
-      <button @click="startAuthEmailPassword">
-        登录
-      </button>
-    </div>
-    <div class="TestDAuthWeb2">
-      <label>address:</label>
-      <label ref="addLabel">{{ addressText }}</label>
-    </div>
-    <div>
-      <label>余额:</label>
-      <label ref="addLabel">{{ banlanceText }}</label>
-    </div>
-    <div>
-      <label>BUSD余额:</label>
-      <label ref="addLabel">{{ usdtText }}</label>
-    </div>
-    <div class="TestDAuthWeb3">
-      <label>转账给</label>
-      <input type="text" v-model="transferAddress" placeholder="转出地址">
-      <label>0.001eth</label>
-      <button @click="transfer">
-        提交
-      </button>
-    </div>
-    <div>
-      <label>转账给</label>
-      <input type="text" v-model="transferAddressBUSD" placeholder="转出地址">
-      <label>100BUSD</label>
-      <button @click="transferBusd">
-        提交
-      </button>
-    </div>
-    <div class="TestDAuthWeb4">
-      <label>{{ trxRes }}</label>
-    </div>
-    <div>
-      <button @click="queryUserInfo">查询用户信息</button>
-      <label>{{ userinfoStr }}</label>
-    </div>
-    <div>
-      <label>绑定邮箱:</label>
-      <input type="text" v-model="bindEmailStr" placeholder="请输入邮箱地址">
-      <button @click="getEmailBindVCode">
-        获取验证码
-      </button>
-      <input type="text" v-model="bindEmailVcode" placeholder="验证码">
-      <button @click="bindEmail">
-        绑定
-      </button>
-    </div>
-    <div>
-      <input type="text" v-model="setPasswordStr" placeholder="设置密码">
-      <button @click="setPassword">设置</button>
-    </div>
-    <div>
-      <label>邮箱验证修改密码:</label>
-      <input type="text" v-model="restEmailStr" placeholder="请输入邮箱地址">
-      <button @click="getResetEmailVCode">
-        获取验证码
-      </button>
-      <input type="text" v-model="restEmailVcode" placeholder="验证码">
-      <input type="text" v-model="emailNewPwd" placeholder="新密码">
-      <button @click="restPwdByVcode">
-        修改
-      </button>
-    </div>
-    <div>
-      <label>原始密码修改密码:</label>
-      <input type="text" v-model="resetOldPassword" placeholder="旧密码">
-      <input type="text" v-model="resetNewPassword" placeholder="新密码">
-      <button @click="restPwdByOldPassword">
-        修改
-      </button>
-    </div>
+    <v-container>
+      <v-row>
+        <div>
+          <v-combobox v-model="chains" density="comfortable" label="Comfortable"></v-combobox>
+        </div>
+        <div>
+          <label>当前登录状态：</label>
+          <label>{{ loginState }}</label>
+        </div>
+        <br />
+      </v-row>
+      <v-row>
+        <div>
+          <button @click="startAuth">
+            发起Twitter登录授权
+          </button>
+          <button @click="startAuthGoogle">
+            发起Google登录授权
+          </button>
+          <button @click="startTgLogin">
+            发起Telegram登录授权
+          </button>
+        </div>
+      </v-row>
+      <v-row>
+        <div>
+          <input type="text" v-model="emailStr" placeholder="请输入邮箱地址">
+          <button @click="getEmailVCode">
+            获取验证码
+          </button>
+          <input type="text" v-model="emailVcode" placeholder="验证码">
+          <button @click="startAuthEmailVerCode">
+            登录
+          </button>
+        </div>
+      </v-row>
+      <v-row>
+        <div>
+          <input type="text" v-model="phoneAreaCode" />
+          <input type="text" v-model="phoneStr" placeholder="请输入手机号">
+          <button @click="getPhoneVCode">
+            获取验证码
+          </button>
+          <input type="text" v-model="phoneCode" placeholder="验证码">
+          <button @click="startAuthPhoneVerCode">
+            登录
+          </button>
+        </div>
+        <div>
+          <input type="text" v-model="loginEmailStr" placeholder="请输入邮箱地址">
+          <input type="password" v-model="emailPassword" placeholder="密码">
+          <button @click="startAuthEmailPassword">
+            登录
+          </button>
+        </div>
+        <br />
+      </v-row>
+      <v-row>
+        <div>
+          <label>address:</label>
+          <label>{{ addressText }}</label>
+        </div>
+        <div>
+          <label>余额:</label>
+          <label>{{ banlanceText }}</label>
+        </div>
+        <div>
+          <label>转账给</label>
+          <input type="text" v-model="transferAddress" placeholder="转出地址">
+          <label>0.001eth</label>
+          <button @click="transfer">
+            提交
+          </button>
+        </div>
+        <br />
+      </v-row>
+      <v-row>
+        <div>
+          <div>
+            <label>查询ERC20余额:</label>
+          </div>
+          <div>
+            <label>ERC20地址:</label>
+            <input type="text" v-model="erc20Address" placeholder="ERC20地址">
+            <button @click="qureyErcBlance">
+              查询
+            </button>
+            <label>{{ erc20Text }}</label>
+          </div>
+          <label>转账给</label>
+          <input type="text" v-model="transferAddressBUSD" placeholder="转出地址">
+          <label>{{ toErc20Value }}</label>
+          <button @click="transferBusd">
+            提交
+          </button>
+        </div>
+        <br />
+      </v-row>
+      <v-row>
+        <div>
+          <label>{{ trxRes }}</label>
+        </div>
+      </v-row>
+      <v-row>
+        <div>
+          <button @click="queryUserInfo">查询用户信息</button>
+          <label>{{ userinfoStr }}</label>
+
+        </div>
+        <br />
+      </v-row>
+      <v-row>
+        <div>
+          <label>绑定邮箱:</label>
+          <input type="text" v-model="bindEmailStr" placeholder="请输入邮箱地址">
+          <button @click="getEmailBindVCode">
+            获取验证码
+          </button>
+          <input type="text" v-model="bindEmailVcode" placeholder="验证码">
+          <button @click="bindEmail">
+            绑定
+          </button>
+        </div>
+        <div>
+          <input type="text" v-model="setPasswordStr" placeholder="设置密码">
+          <button @click="setPassword">设置</button>
+        </div>
+        <div>
+          <label>邮箱验证修改密码:</label>
+          <input type="text" v-model="restEmailStr" placeholder="请输入邮箱地址">
+          <button @click="getResetEmailVCode">
+            获取验证码
+          </button>
+          <input type="text" v-model="restEmailVcode" placeholder="验证码">
+          <input type="text" v-model="emailNewPwd" placeholder="新密码">
+          <button @click="restPwdByVcode">
+            修改
+          </button>
+        </div>
+        <div>
+          <label>原始密码修改密码:</label>
+          <input type="text" v-model="resetOldPassword" placeholder="旧密码">
+          <input type="text" v-model="resetNewPassword" placeholder="新密码">
+          <button @click="restPwdByOldPassword">
+            修改
+          </button>
+        </div>
+      </v-row>
+    </v-container>
     <div>
       <button @click="logout">退出</button>
     </div>
@@ -120,80 +156,50 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { DAuthWalletManager, ethers } from "dauth-web";
+import { Vue } from 'vue-class-component';
+import { CommonResponse, DAuthWalletManager, IExcuteData, ethers } from "dauth-web";
 import erc20 from "./ERC20.json";
-import { computed, mergeProps } from 'vue';
 
-// @Options({
-//   props: {
-//     restEmailStr: String,
-//     restEmailVcode: String,
-//     emailNewPwd: String,
-
-//     addressText: String,
-//     transferAddress: String,
-//     trxRes: String,
-
-//     loginState: String,
-
-//     emailStr: String,
-//     emailVcode: String,
-//     userinfoStr: String,
-//     banlanceText: String,
-//     usdtText: String,
-
-//     loginEmailStr: String,
-//     bindEmailStr: String,
-//     emailPassword: String,
-
-//     bindEmailVcode: String,
-//     setPasswordStr: String,
-
-//     resetOldPassword: String,
-//     resetNewPassword: String,
-
-//     transferAddressBUSD: String,
-
-//     phoneStr: String,
-//     phoneCode: String,
-//     phoneAreaCode: String,
-//   }
-// })
 export default class TestDAuthWeb extends Vue {
+  chains: string[] = []
   restEmailStr = ""
-  restEmailVcode =""
-  emailNewPwd=""
+  restEmailVcode = ""
+  emailNewPwd = ""
 
-  addressText="地址"
-  transferAddress =""
-  trxRes=""
+  addressText = "地址"
+  transferAddress = ""
+  trxRes = ""
 
-  loginState ="未登录"
+  loginState = "未登录"
 
-  emailStr=""
-  emailVcode=""
+  emailStr = ""
+  emailVcode = ""
 
-  userinfoStr =""
-  banlanceText=""
-  usdtText=""
+  userinfoStr = ""
+  banlanceText = ""
 
-  loginEmailStr=""
-  bindEmailStr =""
+  erc20Address = ""
+  erc20Text = "余额"
+  erc20Resiver = ""
 
-  emailPassword=""
+  loginEmailStr = ""
+  bindEmailStr = ""
 
-  bindEmailVcode=""
-  setPasswordStr=""
+  emailPassword = ""
 
-  resetOldPassword=""
-  resetNewPassword=""
+  bindEmailVcode = ""
+  setPasswordStr = ""
 
-  transferAddressBUSD=""
+  resetOldPassword = ""
+  resetNewPassword = ""
 
-  phoneStr=""
-  phoneCode=""
-  phoneAreaCode="86"
+  transferAddressBUSD = ""
+
+  phoneStr = ""
+  phoneCode = ""
+  phoneAreaCode = "86"
+
+  toErc20Value = ""
 
   startAuth() {
     const info = {
@@ -391,7 +397,7 @@ export default class TestDAuthWeb extends Vue {
 
   }
 
-  doCallTest(callData: any) {
+  doCallTest(callData: IExcuteData) {
     //预估gas
     console.log("trans to ", this.addressText);
     if ("" !== this.addressText) {
@@ -428,13 +434,17 @@ export default class TestDAuthWeb extends Vue {
   }
 
   transferBusd() {
-    console.log("transfer ")
-    const nft = new ethers.utils.Interface(erc20.abi);
+    console.log("transfer ");
+    //自己链接钱包，查询小数位
+    // const privoder = new ethers.providers.JsonRpcProvider("")
+
+
+    const token = new ethers.utils.Interface(erc20.abi);
     const callData = {
-      toAddress: "0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4",
+      toAddress: this.erc20Address,
       amount: 0,
-      callData: nft.encodeFunctionData("transfer",
-        [ethers.utils.getAddress(this.transferAddressBUSD), 100000000]),
+      callData: token.encodeFunctionData("transfer",
+        [ethers.utils.getAddress(this.transferAddressBUSD), this.toErc20Value]),
     }
     this.doCallTest(callData);
   }
@@ -449,11 +459,26 @@ export default class TestDAuthWeb extends Vue {
       // sdkVersion:"1.2.2",
       // serverTag:"prod",
       // chainType:"Arbitrum"
-    });
-    this.checkAuth();
+    })
+    .then(
+      (inited:boolean) => {
+        //初始化选链列表
+        if (inited) {
+          const list = DAuthWalletManager.getChainList()
+          for (const l of list) {
+            this.chains.push(l)
+          }
+
+          this.checkAuth();
+        }
+        else {
+          window.alert("init failed")
+        }
+      }
+    );
   }
 
-  async initLoginStata(response: any) {
+  async initLoginStata(response: CommonResponse<string>) {
     if (response.error === 0) {
       this.loginState = response.data + "登录成功";
       // await DAuthWalletManager.createWallet().then(
@@ -485,17 +510,6 @@ export default class TestDAuthWeb extends Vue {
             window.alert(JSON.stringify(res.data))
           }
         });
-        DAuthWalletManager.queryWalletERC20("0xC95c4D21148FDA28cB86386C48Af62A437ee9fE4").then((ret) => {
-          this.usdtText = ret.data.toString();
-        }).catch((ret) => {
-          if (ret.error === -1) {
-            this.loginState = "请重新登录";
-          }
-          else {
-            window.alert(JSON.stringify(res.data))
-          }
-        });
-
       }
       ).catch((res) => {
         console.log("queryWalletAddress", res);
@@ -506,6 +520,7 @@ export default class TestDAuthWeb extends Vue {
           if (res.error === 0) {
             if (res.data === "") {
               DAuthWalletManager.createWallet().then(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (createRes: any) => {
                   console.log(createRes);
                   this.addressText = createRes.data;
@@ -534,14 +549,27 @@ export default class TestDAuthWeb extends Vue {
     }
   }
 
+  qureyErcBlance() {
+    DAuthWalletManager.queryWalletERC20(this.erc20Address).then((ret) => {
+      this.erc20Text = ret.data.toString();
+    }).catch((ret) => {
+      if (ret.error === -1) {
+        this.loginState = "请重新登录";
+      }
+      else {
+        window.alert(JSON.stringify(ret.data))
+      }
+    });
+  }
+
   async checkAuth() {
-    try{
+    try {
       const response = await DAuthWalletManager.checkLoginRedirctUrl({ url: window.location.href });
       //window.alert(JSON.stringify(response))
       console.log("check data ", response);
       this.initLoginStata(response);
     }
-    catch (err){
+    catch (err) {
       console.log(err)
     }
   }
@@ -566,4 +594,5 @@ li {
 
 a {
   color: #42b983;
-}</style>
+}
+</style>
