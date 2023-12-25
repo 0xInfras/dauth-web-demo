@@ -3,7 +3,7 @@ module.exports = defineConfig({
   transpileDependencies: true,
   devServer: {
     port:3000,
-    https: true
+    //https: true
   },
   configureWebpack: config => {
     // 为生产环境修改配置...
@@ -13,7 +13,8 @@ module.exports = defineConfig({
         config.performance = {
           maxEntrypointSize: 10000000,
           maxAssetSize: 30000000
-        }
-    }
+        };
+        config.devtool = 'source-map';
+    } 
 },
 })

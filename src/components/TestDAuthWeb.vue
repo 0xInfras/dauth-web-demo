@@ -3,7 +3,12 @@
     <v-container>
       <v-row>
         <div>
-          <v-combobox v-model="chains" density="comfortable" label="Comfortable"></v-combobox>
+          <label>当前链</label>
+          <select v-model="selectedOption">  
+          <option v-for="option in options" :value="option.text" :key="option.value">  
+            {{ option.text }}  
+          </option>  
+        </select>  
         </div>
         <div>
           <label>当前登录状态：</label>
@@ -160,8 +165,17 @@ import { Vue } from 'vue-class-component';
 import { CommonResponse, DAuthWalletManager, IExcuteData, ethers } from "dauth-web";
 import erc20 from "./ERC20.json";
 
+export interface Op{
+  value:string,
+  text:string
+}
+
 export default class TestDAuthWeb extends Vue {
-  chains: string[] = []
+  selectedOption = ""
+
+  options: Op[] = [];
+
+  
   restEmailStr = ""
   restEmailVcode = ""
   emailNewPwd = ""
@@ -464,18 +478,21 @@ export default class TestDAuthWeb extends Vue {
       (inited:boolean) => {
         //初始化选链列表
         if (inited) {
+          
           const list = DAuthWalletManager.getChainList()
           for (const l of list) {
-            this.chains.push(l)
+            this.options.push({value: 'option1', text: l })
+   
           }
-
           this.checkAuth();
         }
         else {
           window.alert("init failed")
         }
       }
-    );
+    ).catch(()=>{
+      window.alert("init sdk failed")
+    });
   }
 
   async initLoginStata(response: CommonResponse<string>) {
