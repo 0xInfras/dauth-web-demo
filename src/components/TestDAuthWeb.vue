@@ -76,6 +76,17 @@
     <br />
 
     <div>
+      <select v-model="tokenCode">
+        <option v-for="option in tokenCodes" :value="option.text" :key="option.value">
+          {{ option.text }}
+        </option>
+      </select>
+      <select v-model="faitCode">
+        <option v-for="option in faitCodes" :value="option.text" :key="option.value">
+          {{ option.text }}
+        </option>
+      </select>
+      <input type="text" v-model="failAmount" placeholder="法币数量">
       <button @click="buyToken">购买token</button>
       <div>
         <label>查询ERC20余额:</label>
@@ -153,19 +164,27 @@
 import { Vue } from 'vue-class-component';
 import {
   CommonResponse, DAuthWalletManager, IExcuteData, ethers,
-  QueryUserInfoResult, KycStatus
+  QueryUserInfoResult, KycStatus, Currency
 } from "dauth-web";
 import erc20 from "./ERC20.json";
 
 export interface Op {
   value: string,
-  text: string
+  text: string,
+  data:string
 }
+
 
 export default class TestDAuthWeb extends Vue {
   selectedOption = ""
 
   options: Op[] = [];
+
+  tokenCode=''
+  tokenCodes:Op[] =[]
+  faitCode="USD"
+  faitCodes:Op[]=[]
+  failAmount=10
 
 
   restEmailStr = ""
@@ -456,36 +475,39 @@ export default class TestDAuthWeb extends Vue {
   }
 
   mounted() {
-    DAuthWalletManager.initSDK({
-      appId: "1bfe5bbf619681e49cdc62d07badc4cb",
-      sdkVersion: "1.2.2",
-      serverTag: "test",
-      chainType: "ArbitrumGoerli"
-      // appId: "430f220f2a6554040849863e04ba5187",
-      // sdkVersion:"1.2.2",
-      // serverTag:"prod",
-      // chainType:"Arbitrum"
+    const list = DAuthWalletManager.getChainList()
+    for (const l of list) {
+      this.options.push({ value: l, text: l , data:""})
+
+    }
+    this.selectedOption = this.options[0].value;
+
+    //查询可购买币种
+    DAuthWalletManager.queryCryptoTypes().then(( cryptos : CommonResponse< Currency>)=>{
+      this.tokenCodes = []
+      for(const c of cryptos.data.crypto)
+      {
+        this.tokenCodes.push({text: c.cryptoCode, value:c.cryptoCode, data:c.cryptoIcon})
+      }
+      if(this.tokenCodes.length > 0)
+      {
+        this.tokenCode = this.tokenCodes[0].value
+      }
+      this.faitCodes = []
+      for(const c of cryptos.data.faitCodes)
+      {
+        this.faitCodes.push({text: c, value:c, data:""})
+      }
+      if(this.faitCodes.length > 0)
+      {
+        this.faitCode = this.faitCodes[0].value
+      }
+      
+    }
+    ).catch(()=>{
+      window.alert("查询可购买币种列表失败")
     })
-      .then(
-        (inited: boolean) => {
-          //初始化选链列表
-          if (inited) {
-
-            const list = DAuthWalletManager.getChainList()
-            for (const l of list) {
-              this.options.push({ value: l, text: l })
-
-            }
-            this.selectedOption = this.options[0].value;
-            this.checkAuth();
-          }
-          else {
-            window.alert("init failed")
-          }
-        }
-      ).catch(() => {
-        window.alert("init sdk failed")
-      });
+    this.checkAuth();
   }
 
   async initLoginStata(response: CommonResponse<string>) {
@@ -585,30 +607,41 @@ export default class TestDAuthWeb extends Vue {
   }
 
   buyToken() {
-    const cache = DAuthWalletManager.queryUserCache()
     DAuthWalletManager.isKYC().then((res: CommonResponse<KycStatus>) => {
       DAuthWalletManager.queryUserInfo().then(( info: CommonResponse<QueryUserInfoResult | object>) => {
         const infoConvert = info.data as QueryUserInfoResult
-        const param = {
-          authId: cache.dauthId,
-          accesstoken: cache.dauthAccessToken,
-          email: infoConvert.email
-        }
         const kycState = res.data
         if (kycState === "NeedBindEmail") {
           window.alert("请先绑定email")
         }
         else if (kycState === "NeedKYC" || kycState === "KYCFailed") {
+          // this.$router.push({
+          //   name: 'KycPage',
+          //   query: {email: infoConvert.email}
+          // })
+          let icon = ""
+          for(const c of this.tokenCodes){
+            if(c.value === this.tokenCode)
+            {
+              icon = c.data
+            }
+          }
           this.$router.push({
-            name: 'KycPage',
-            query: param
+            name: 'CheckOut',
+            query: {faitCode:this.faitCode, amount:this.failAmount, cryptoCode:this.tokenCode, cryptoIcon:icon}
           })
         }
         else if (kycState === "KYCSucess") {
-
+          let icon = ""
+          for(const c of this.tokenCodes){
+            if(c.value === this.tokenCode)
+            {
+              icon = c.data
+            }
+          }
           this.$router.push({
-            name: 'FiatOrder',
-            query: param
+            name: 'CheckOut',
+            query: {faitCode:this.faitCode, amount:this.failAmount, cryptoCode:this.tokenCode, cryptoIcon:icon}
           })
         }
         else {

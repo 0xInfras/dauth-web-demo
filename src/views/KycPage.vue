@@ -170,10 +170,6 @@ import {DAuthWalletManager} from "dauth-web";
         mounted:function(){
             if(this.$route.query != undefined)
             {
-                sessionStorage.setItem('email', this.$route.query.email);
-                sessionStorage.setItem('authId', this.$route.query.authId);
-                sessionStorage.setItem('accessToken', this.$route.query.accesstoken);
-
                 this.mail = this.$route.query.email
                 this.sendButtonEnable = false
 

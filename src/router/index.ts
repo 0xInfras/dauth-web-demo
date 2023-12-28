@@ -6,6 +6,7 @@ import FiatOrder from "../views/FiatOrder.vue"
 import CryptoOrder from "../views/CryptoOrder.vue"
 import PayWithCrypto from "../views/PayWithCrypto.vue"
 import PayWithFiat from "../views/PayWithFiat.vue"
+import CheckOutFiat from "../views/CheckOutFiat.vue"
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -33,7 +34,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     name: 'CheckOut',
     path: '/CheckOut',
-    component: CheckOut
+    component: CheckOutFiat
   },
   {
     name: 'FiatOrder',

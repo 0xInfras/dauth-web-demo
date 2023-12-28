@@ -57,6 +57,7 @@ import {localSign} from "../utils/common.js"
 import {host} from "../utils/common.js"
 import {apiList} from "../utils/common.js"
 import { showToast  } from 'vant';
+import {DAuthWalletManager} from 'dauth-web'
 export default{
     data(){
         return{
@@ -70,34 +71,28 @@ export default{
             amount: '',
             payment:'',
             showImg: false,
-            state:''
+            state:'',
+            fileBase64:""
         }
     },
     mounted:function(){
-        if(this.$route.query.security_key != undefined)
-        {
-            //有可能是没有经过CheckOut直接过来的，如果是的话，就要
-            sessionStorage.setItem('security_key', atob(this.$route.query.security_key));
-        }
 
-        //如果是直接带参数进来的，优先用参数
-        if(this.$route.query.auth_id != undefined)
-            this.auth_id = this.$route.query.auth_id
-        else
-            this.auth_id = sessionStorage.getItem('auth_id')
+        //拉取订单详情
+        const orderid = this.$route.query.orderId 
+        DAuthWalletManager.queryOrderDetail(orderid).then((res)=>{
+            this.last_update = new Date().getTime();
+            this.order_id = res.data.orderId;
+            this.paymethod_info = res.data.paymethodInfo.detail
 
-        if(this.$route.query.order_id != undefined)
-            this.order_id = this.$route.query.order_id
-        else
-            this.order_id = sessionStorage.getItem('order_id')
+            this.amount = res.data.amount;
+            this.payment = res.data.paymethodInfo.paymethodName;
+            this.payee = res.data.paymethodInfo.paymethodUsername;
+            this.state = res.data.state;
+            this.timestamp = Number(res.data.createTime)
 
-        if(this.$route.query.client_id != undefined)
-            this.client_id = this.$route.query.client_id
-        else
-            this.client_id = sessionStorage.getItem('client_id')
-
-        this.last_update = 0;
-        this.getDetail();
+        }).catch(()=>{
+            showToast("查询订单详情失败")
+        })
 
         this.timestamp = 0;
         this.buyTime = setInterval(()=>{
@@ -140,33 +135,29 @@ export default{
             },this.client_id)
         },
 
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        afterRead(){
+        afterRead(file){
+            file.status = 'uploading';
+            file.message = 'processing...';
+
+            //调api上传
+            this.fileBase64 = file.content
 
         },
         PaidEvent(){
-            if(this.fileList.length === 0){
+            if(this.fileBase64 === ""){
                 showToast("Please upload your payment proof first")
                 return
             }
             this.isDisabled = true;
-            let url = host + apiList["paid"]
-            let formData = new FormData();
-            formData.append('authid', this.auth_id);
-            formData.append('order_id', this.order_id);
-            postEventToken(url,localSign(formData),(res)=>{
-                let retCode = res.data.ret
-                switch (retCode) {
-                    case 0:
-                        this.getDetail();
-                        break;
-                    default:
-                        this.isDisabled = false;
-                 }
-
-            },(er)=>{
-                console.error(er)
-            },this.client_id)
+            //上传支付凭证
+            DAuthWalletManager.payment({
+                orderId: this.order_id,
+                paymentImage: this.fileBase64
+            }).then(()=>{
+                showToast("订单完成")
+            }).catch(()=>{
+                showToast("paid失败")
+            })
         },
         CancelOrderEvent(){
             this.isDisabled = true;

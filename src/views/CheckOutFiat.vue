@@ -7,8 +7,9 @@
                 <img v-else :src="item_image">
             </div>
             <p class="checkout_title" v-text="item_name"> </p>
-            <p class="checkout_p_title" v-text="currency"></p>
+            <p class="checkout_p_title" v-text="currencyStr"></p>
             <p class="checkout_money" v-text="amount"></p>
+            <p class="checkout_crypto" v-text="cryptoAmount"></p>
             <p class="pay_title">Pay with</p>
             <ul class="pay_menu" v-if="payMenu.length > 0">
                 <li @click="selectPayment(data)" v-for="(data,index) in payMenu" :key="index">
@@ -31,94 +32,115 @@
 </template>
 <script>
 import {postEventToken} from "../utils/common.js"
-import {localSign} from "../utils/common.js"
-import {host} from "../utils/common.js"
-import {apiList} from "../utils/common.js"
-import { showToast  } from 'vant';
-//先清理一次缓存
-sessionStorage.clear();
+import { showToast  } from 'vant'
+
+import {DAuthWalletManager,CommonResponse, Crypto,OrderQuoteResault, FiatInfo} from "dauth-web"
 
 export default {
     data(){
         return{
             imgload:true,
             selPayment:null,
-            selPaymentID:0,
-            item_name: this.$route.query.item,
-            item_image: this.$route.query.img,
-            currency:"Amount (" + this.$route.query.currency + ")",
-            amount:this.$route.query.amount,
+            selPaymentID:"",
+            item_name: "",
+            item_image: "",
+            currency:"",
+            currencyStr:"",
+            amount:0,
+            cryptoAmount:0,
             payMenu:[],
             isGetPay:true,
-            isDisabled:false
+            isDisabled:false,
+            quoteType:"",
         }
     },
 
     mounted:function(){
+        this.currencyStr = "Amount (" +this.$route.query.faitCode+ ")"
+        this.currency = this.$route.query.faitCode
+        this.amount = this.$route.query.amount * 1 //to number
+        this.buttonClass  = 'disabled_confirm';
 
-        //正式上的时候，这些参数是从query里获取出来的
-        sessionStorage.setItem('auth_id', this.$route.query.auth_id);
-        sessionStorage.setItem('order_id', this.$route.query.order_id);
-        sessionStorage.setItem('client_id', this.$route.query.client_id);
+        const c = {
+            cryptoCode:this.$route.query.cryptoCode,
+            cryptoIcon:this.$route.query.cryptoIcon
 
-        if(this.$route.query.security_key != undefined)
-        {
-            sessionStorage.setItem('security_key', this.$route.query.security_key);
         }
-
-        let localCreate = this.$route.query.local_create
-        //测试时本地生成订单
-        if(localCreate === 'true')
-        {
-            this.createOrder();
-        }
-
+        //查询可购买的币种
+        this.item_name = c.cryptoCode
+        this.item_image = c.cryptoIcon;
+        console.log("item_image", this.item_image)
         this.imgLoad();
-        this.getPayMenu(); //获取支付方式
+        
+        DAuthWalletManager.paymentEstimate({
+            quoteType: "AnchorFait",
+            crypto: c,
+            fiatCode: this.currency,
+            inputAmount:  this.amount
+        }).then((res)=>{
+            if(res.data.outAmount ===0 )//说明法币数量不足
+            {
+                showToast(`输入金额应该在${res.data.amountMin}-${res.data.amountMax}}之间`)
+            }
+            else
+            {
+                this.quoteType = res.data.quoteType 
+                //匹配支付方式
+                DAuthWalletManager.matchPayment({
+                    quoteType: res.data.quoteType,
+                    crypto: c,
+                    fiatCode: this.currency,
+                    inputAmount: this.amount
+                }).then((faitListData)=>{
+                    const faitList = faitListData.data
+                    this.payMenu = []
+                    //加载支付列表
+                    for(const fait of faitList){
+                        this.payMenu.push({paymethod_id:fait.paymentId,icon:fait.icon})
+                    }
+                    console.log("payment", faitList, this.payMenu)
+                    if(this.payMenu.length > 0){
+                        this.selPaymentID = this.payMenu[0].paymethod_id   //默认第一个
+                        this.buttonClass  = 'confirm_btn';
+                    }
+                }).catch(()=>{
+                    showToast(`匹配支付方式失败`)
+                })
+                console.log("res.data.outAmount", res.data.outAmount)
+                this.cryptoAmount = res.data.outAmount
+            }
+        }).catch((er)=>{
+            showToast(`预估金额失败 ${JSON.stringify(er)}`)
+        })
+        //this.getPayMenu(); //获取支付方式
     },
     methods:{
         ConfrimEvent(){
-            let url = host + apiList["create"]
-            if(this.payMenu.length === 0 || this.selPayment === undefined){
-                showToast("Please choose one payment method")
-                return
+
+            if(this.selPaymentID !== "")
+            {
+                //创建订单
+                DAuthWalletManager.createFiatOrder({
+                    outOrderId:"",//demo默认传空，业务自己需要传orderId
+                    quoteType: this.quoteType,
+                    fiatCode: this.currency,
+                    cryptoCode: this.item_name,
+                    amount: this.amount,
+                    paymethodId: this.selPaymentID
+                }).catch(()=>{
+                    showToast("创建订单失败")
+                }).then((res)=>{
+                    //跳转到订单详情
+                    console.log(res)
+                    this.$router.push({
+                        name: 'FiatOrder',
+                        query: {orderId:res.data}
+                    })
+                })
             }
-            let auth_id = sessionStorage.getItem('auth_id');
-            let order_id = sessionStorage.getItem('order_id');
-
-            //它这里是文本写的"undefined"
-            if(auth_id === "undefined" || order_id === "undefined") {
-                showToast("Error occurs!")
-                return
+            else{
+                showToast("请先选择支付方式")
             }
-
-            this.isDisabled = true;
-            this.buttonClass  = 'disabled_confirm';
-
-            let formData = new FormData();
-            formData.append('authid', auth_id);
-            formData.append('order_id', order_id);
-            formData.append('paymethod_id', this.selPaymentID);
-
-            postEventToken(url,localSign(formData),(res)=>{
-                let retCode = res.data.ret
-                switch (retCode) {
-                    case 0:
-                        this.$router.push("FiatOrder");
-                        return;
-                    case 1000052:
-                        //已有订单，回到历史状态
-                        showToast(res.data.info);
-                        break;
-                    default:
-                        showToast(" An error was occurred, Code: " + retCode)
-                        break;
-                }
-            },()=>{
-                showToast("An error was occurred.")
-                //关闭
-            }, sessionStorage.getItem('client_id'))
-
         },
 
         //获取道具详情，道具详情需要在app菜单点击后写入localStorge,以json字符串形式写
@@ -132,64 +154,6 @@ export default {
                 this.amount = json.amount;
            }
         },*/
-        //测试阶段本地创建订单用
-        createOrder(){
-            let url = host + apiList["preCreate"]
-            let formData = new FormData();
-
-            formData.append('amount', this.$route.query.amount)
-            formData.append('crypto_code', this.$route.query.crypto)
-            formData.append('authid', this.$route.query.auth_id)
-            formData.append('fiat_code', this.$route.query.currency)
-            formData.append('out_order_id', this.$route.query.exOrderId)
-            formData.append('chain_id', 1)
-
-            postEventToken(url, localSign(formData),(res)=>{
-                this.isGetPay = false
-                let retCode = res.data.ret
-                switch (retCode) {
-                    case 0:
-                        sessionStorage.setItem('order_id', res.data.data.detail.order_id);
-                        break;
-                    default:
-                        showToast("本地测试状态下创建订单失败！");
-                        break;
-                }
-            },()=>{
-                this.isGetPay = false
-                this.selPayment = null
-            },sessionStorage.getItem('client_id'))
-        },
-
-        //获取支付方式
-        getPayMenu(){
-            let url = host + apiList["getCurrency"]
-            let formData = new FormData();
-            formData.append('authid', sessionStorage.getItem('auth_id'))
-
-            postEventToken(url, localSign(formData),(res)=>{
-                this.isGetPay = false
-                let retCode = res.data.ret
-                switch (retCode) {
-                    case 0:
-                     for (const item of res.data.data.fiat_list) {
-                            if(item.fiat_code === this.$route.query.currency) {
-                                this.payMenu = item.paymethod_info_list
-                                if(this.payMenu.length > 0){
-                                    this.selPaymentID = this.payMenu[0].id   //默认第一个
-
-                                 }
-                             }
-                         }
-                     this.buttonClass  = 'confirm_btn';
-                     break;
-                }
-            },()=>{
-                this.isGetPay = false
-                this.selPayment = null
-            },  sessionStorage.getItem('client_id'))
-
-        },
         selectPayment(item){
             this.selPayment = item
             this.selPaymentID = item.paymethod_id
