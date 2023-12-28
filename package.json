@@ -11,6 +11,7 @@
     "axios": "^1.6.2",
     "core-js": "^3.8.3",
     "dauth-web": "../dauth-web",
+    "element-ui": "^2.15.14",
     "less": "^4.2.0",
     "less-loader": "^11.1.3",
     "qrcode": "^1.5.3",

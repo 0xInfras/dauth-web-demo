@@ -31,14 +31,14 @@
             <div class="flex_main">
                 <van-field v-model="sms" center clearable class="van_field_css van_field_css_sms"
                 placeholder="短信"></van-field>
-                <div class="sms_btn" :class="{sms_btn_disable:isSend}" 
+                <div class="sms_btn" :class="{sms_btn_disable:isSend || !sendButtonEnable}" 
                     @click="getSms">{{isSend?second+"s":smsTitle}}</div>
             </div>
 
             <p class="key_s_title2">Document Issued Country/Region</p>
              <div class="flex_main">
                 <div class="select_box" @click="regionDisplay(true)">
-                    {{RegionCode}}
+                    {{RegionName}}
                     <van-icon name="arrow-down" style="position:absolute;right:2vw;top:50%;transform: translateY(-50%);" />
                 </div>
                 <van-field class="van_field_css van_field_css_phone" style="opacity: 0;width:0;margin-left:0;padding-left:0;padding-right:0;"  />
@@ -86,7 +86,7 @@
             @cancel="onClose" 
         />
     </van-popup>
-        <van-popup v-model:show="regionShow" position="bottom" @close="regionClose" :style="{height:'55%'}">
+    <van-popup v-model:show="regionShow" position="bottom" @close="regionClose" :style="{height:'55%'}">
         <van-picker
             class="picker_css"
             title="Country/Region"
@@ -115,6 +115,7 @@
 <script>
 import {postEventToken} from "../utils/common.js"
 import { showToast,showDialog  } from 'vant';
+import {DAuthWalletManager} from "dauth-web";
     export default{
         data(){
         return{
@@ -126,26 +127,14 @@ import { showToast,showDialog  } from 'vant';
             phone:"",
             mail:"",
             pickerShow:false,
-            columns :[{ text: '86', value: '86' },
-                    { text: '87', value: '87' },
-                    { text: '88', value: '88' }],
+            columns :[],
             sendType:"1",
             RegionCode:"",
+            RegionName:"",
             regionShow:false,
             regionColumns:[
-                    { text: '杭州', value: 'Hangzhou' },
-                    { text: '宁波', value: 'Ningbo' },
                 ],
-             typeArr:{
-                Hangzhou:[
-                    { text: 'ID', value: 'ID',front:1,back:1,frontTitle:"Upload the front cover",backTitle:"Upload the back cover" },
-                    { text: 'Driver', value: 'Driver',front:1,back:0,frontTitle:"Upload the front cover",backTitle:"Upload the back cover" },
-                ],
-                Ningbo:[
-                      { text: 'ID', value: 'ID' ,front:1,back:1,frontTitle:"Upload the front cover",backTitle:"Upload the back cover"},
-                    { text: '湖州', value: 'Huzhou' ,front:1,back:1,frontTitle:"Upload the front cover",backTitle:"Upload the back cover"},
-                ]
-             },
+             typeArr:{},
              typeShow:false,
              typeColumns:[],
              typeCode:"",
@@ -154,16 +143,43 @@ import { showToast,showDialog  } from 'vant';
              front:1,
              back:1,
              frontTitle:"Upload the front cover",
-             backTitle:"Upload the front cover"
+             backTitle:"Upload the front cover",
+             sendButtonEnable:true
             }
             
         },
         mounted:function(){
-            this.RegionCode = this.regionColumns[0].value
-            this.typeColumns = this.typeArr[this.RegionCode]
-            if(this.$route.query.security_key != undefined)
+            if(this.$route.query != undefined)
             {
-                sessionStorage.setItem('security_key', this.$route.query.security_key);
+                sessionStorage.setItem('email', this.$route.query.email);
+                sessionStorage.setItem('authId', this.$route.query.authId);
+                sessionStorage.setItem('accessToken', this.$route.query.accesstoken);
+
+                this.mail = this.$route.query.email
+                this.sendButtonEnable = false
+
+                //查询国家列表
+                DAuthWalletManager.queryCountryList().then((res)=>{
+                    const countrylist  = res.data
+                    this.regionColumns = []
+                    this.columns = []
+                    for(const c of countrylist)
+                    {
+                        this.regionColumns.push({ text: c.countryName, value: c.countryName ,countryISO:c.countryCode})
+                        this.columns.push({text: c.phoneAreaCode, value: c.phoneAreaCode })
+                        this.typeArr[c.countryName] = [
+                            { text: 'ID', value: 'ID',front:1,back:1,frontTitle:"Upload the front cover",backTitle:"Upload the back cover"},
+                            { text: 'Driver', value: 'Driver',front:1,back:0,frontTitle:"Upload the front cover",backTitle:"Upload the back cover"},
+                        ]
+                    }
+                   
+                    this.RegionCode = this.regionColumns[0].countryISO
+                    this.RegionName = this.regionColumns[0].value
+                    this.typeColumns = this.typeArr[this.RegionName]
+
+                }).catch((er)=>{
+                    window.alert("queryCountryList error ", er)
+                })
             }
         },
         methods:{
@@ -176,35 +192,44 @@ import { showToast,showDialog  } from 'vant';
                 this.sms = ""
                 this.mail = ""
                 this.typeCode = ""
+                this.RegionName =""
                  this.RegionCode = ""
             },
             //提交
             SubmitEvent(){
                 let data = {}
                 let aollow = false
-                 if(this.sendType === '1'){
-                    var myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
-                    aollow = myreg.test(this.phone)
-                }else{
-                    // eslint-disable-next-line no-redeclare
-                    var myreg =  /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
-                    aollow = myreg.test(this.mail)
-                }
-                if(!aollow){
-                    if(this.sendType === '1'){
-                        showToast('请正确输入手机')
-                    }else{
-                        showToast('请正确输入邮箱')
-                    }
-                    return
-                }
-                if(!this.sms){
-                    showToast("请输入验证码")
-                    return
-                }
-                postEventToken("url",data,(res)=>{
-                    if(res == 200){
-                       showDialog({
+                //  if(this.sendType === '1'){
+                //     var myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
+                //     aollow = myreg.test(this.phone)
+                // }else{
+                //     // eslint-disable-next-line no-redeclare
+                //     var myreg =  /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
+                //     aollow = myreg.test(this.mail)
+                // }
+                // if(!aollow){
+                //     if(this.sendType === '1'){
+                //         showToast('请正确输入手机')
+                //     }else{
+                //         showToast('请正确输入邮箱')
+                //     }
+                //     return
+                // }
+                // if(!this.sms){
+                //     showToast("请输入验证码")
+                //     return
+                // }
+                //开始提交资料
+                DAuthWalletManager.kycRegister({
+                    fullName: "test",
+                    idType: this.typeCode === "ID" ? "ID_CARD" : "DRIVERS",
+                    idNum: "",
+                    idFrontImg: "",
+                    idBackImg: "",
+                    issuingCountry: this.RegionCode
+                }).then((res)=>{
+                    if(res.data === "KYCSucess"){
+                        showDialog({
                             title:"成功",
                             message:
                                 'Verification may take 15 minutes. Check the results later.',
@@ -213,8 +238,20 @@ import { showToast,showDialog  } from 'vant';
                                 // on confirm
                                 window.close
                             })
-                    }else{
-                         showDialog({
+                    }
+                    if(res.data === "KYCDisposing"){
+                        showDialog({
+                            title:"KYC正在处理",
+                            message:
+                                'Verification may take 15 minutes. Check the results later.',
+                            })
+                            .then(() => {
+                                // on confirm
+                                window.close
+                            })
+                    }
+                    else{
+                        showDialog({
                             title:"失败",
                             message:
                                 'Submission failed!',
@@ -224,11 +261,11 @@ import { showToast,showDialog  } from 'vant';
                                 this.cleanEvent()
                             })
                     }
-                },()=>{
-                   showDialog({
+                }).catch((res)=>{
+                    showDialog({
                             title:"失败",
                             message:
-                                'Submission failed!',
+                                'Submission failed!' + res.msg,
                             })
                             .then(() => {
                                 // on confirm
@@ -356,7 +393,8 @@ import { showToast,showDialog  } from 'vant';
             },
             regionConfirm({ selectedOptions }){
                 console.log(selectedOptions)
-                this.RegionCode = selectedOptions[0].value
+                this.RegionCode = selectedOptions[0].countryISO
+                this.RegionName = selectedOptions[0].value
                 this.regionShow = false
                 this.front = 0
                 this.back = 0 
