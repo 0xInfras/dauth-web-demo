@@ -11,7 +11,7 @@
         
         <van-cell-group>
             <p class="key_s_title">1.Complete the forms</p>
-            <van-tabs style="padding-top:5.3vw" v-model:active="sendType">
+            <!-- <van-tabs style="padding-top:5.3vw" v-model:active="sendType">
                 <van-tab  title="Mobile phone" name="1" >
                      <div class="flex_main" style="padding-top:2vw">
                         <div class="phone_num" @click="pickerDisplay(true)">
@@ -33,7 +33,7 @@
                 placeholder="短信"></van-field>
                 <div class="sms_btn" :class="{sms_btn_disable:isSend || !sendButtonEnable}" 
                     @click="getSms">{{isSend?second+"s":smsTitle}}</div>
-            </div>
+            </div> -->
 
             <p class="key_s_title2">Document Issued Country/Region</p>
              <div class="flex_main">
@@ -49,9 +49,19 @@
                     {{typeCode}}
                     <van-icon name="arrow-down" style="position:absolute;right:2vw;top:50%;transform: translateY(-50%);" />
                 </div>
+                
                  <van-field class="van_field_css van_field_css_phone" style="opacity: 0;width:0;margin-left:0;padding-left:0;padding-right:0;"  />
             </div>
-
+            <div>
+                <van-field v-model="fullName" center clearable class="van_field_css"
+                placeholder="FullName"></van-field>
+               
+            </div>
+            <div>
+                <van-field v-model="idNum" center clearable class="van_field_css"
+                placeholder="id-number"></van-field>
+               
+            </div>
         </van-cell-group>
         <p class="key_s_title">2.Take pictures of both sides of your document</p>
          <p class="key_s_title2" style="margin-top:6vw;margin-bottom:1.5vw">
@@ -139,12 +149,16 @@ import {DAuthWalletManager} from "dauth-web";
              typeColumns:[],
              typeCode:"",
              fileList:[ ],
+             fileBase64:"",
              fileListB:[],
+             fileBase64B:"",
              front:1,
              back:1,
              frontTitle:"Upload the front cover",
              backTitle:"Upload the front cover",
-             sendButtonEnable:true
+             sendButtonEnable:true,
+             idNum:"",
+             fullName:""
             }
             
         },
@@ -194,6 +208,10 @@ import {DAuthWalletManager} from "dauth-web";
                 this.typeCode = ""
                 this.RegionName =""
                  this.RegionCode = ""
+                 this.fileBase64 = ""
+                 this.fileBase64B = ""
+                 this.idNum = ""
+                 this.fullName=""
             },
             //提交
             SubmitEvent(){
@@ -218,14 +236,30 @@ import {DAuthWalletManager} from "dauth-web";
                 // if(!this.sms){
                 //     showToast("请输入验证码")
                 //     return
-                // }
+                // }fullName
+                if( this.fullName === ""){
+                    showToast("请输入全名")
+                    return
+                }
+                if( this.idNum === ""){
+                    showToast("请输入证件号")
+                    return
+                }
+                if( this.fileBase64 === ""){
+                    showToast("请上传证件正面")
+                    return
+                }
+                if( this.fileBase64B === ""){
+                    showToast("请上传证件背面")
+                    return
+                }
                 //开始提交资料
                 DAuthWalletManager.kycRegister({
-                    fullName: "test",
+                    fullName: this.fullName,
                     idType: this.typeCode === "ID" ? "ID_CARD" : "DRIVERS",
-                    idNum: "",
-                    idFrontImg: "",
-                    idBackImg: "",
+                    idNum: this.idNum,
+                    idFrontImg: this.fileBase64,
+                    idBackImg: this.fileBase64B,
                     issuingCountry: this.RegionCode
                 }).then((res)=>{
                     if(res.data === "KYCSucess"){
@@ -274,13 +308,13 @@ import {DAuthWalletManager} from "dauth-web";
                 })
             },
             afterReadB(file){
-                 file.status = 'uploading';
-                file.message = '上传中...';
-
-             
+                file.status = 'uploading';
+                file.message = 'processing...';
 
                 //调api上传
+                this.fileBase64B = file.content
 
+                //console.log("revice ", file)
                 
                 setTimeout(() => {
                     //里面的状态放到请求api的回调里面，成功放成功失败放失败
@@ -292,11 +326,10 @@ import {DAuthWalletManager} from "dauth-web";
                 }, 1000);
             },
             afterRead(file){
-                console.log(file)
+                //console.log(file)
                 file.status = 'uploading';
-                file.message = '上传中...';
-
-             
+                file.message = 'processing...';
+                this.fileBase64 = file.content
 
                 //调api上传
 
@@ -322,40 +355,40 @@ import {DAuthWalletManager} from "dauth-web";
                 // }
             },
             getSms(){
-                let aollow = false
-                if(this.sendType === '1'){
-                    var myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
-                    aollow = myreg.test(this.phone)
-                }else{
-                    // eslint-disable-next-line no-redeclare
-                    var myreg =  /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
-                    aollow = myreg.test(this.mail)
-                }
+                // let aollow = false
+                // if(this.sendType === '1'){
+                //     var myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
+                //     aollow = myreg.test(this.phone)
+                // }else{
+                //     // eslint-disable-next-line no-redeclare
+                //     var myreg =  /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
+                //     aollow = myreg.test(this.mail)
+                // }
                 
   
-                if(aollow){
-                    if(this.isSend){return}
-                    this.isSend = true
-                    let data = {
-                        "phone":this.phone,
-                        "code":this.phoneNum
-                    }
-                    postEventToken("url",data,()=>{
-                        //成功
-                         showToast('已发送')
-                        this.second = 59
-                        this.reckonTime()
-                    })
+                // if(aollow){
+                //     if(this.isSend){return}
+                //     this.isSend = true
+                //     let data = {
+                //         "phone":this.phone,
+                //         "code":this.phoneNum
+                //     }
+                //     postEventToken("url",data,()=>{
+                //         //成功
+                //          showToast('已发送')
+                //         this.second = 59
+                //         this.reckonTime()
+                //     })
                    
 
-                }else{
-                    if(this.sendType === '1'){
-                        showToast('请正确输入手机')
-                    }else{
-                        showToast('请正确输入邮箱')
-                    }
+                // }else{
+                //     if(this.sendType === '1'){
+                //         showToast('请正确输入手机')
+                //     }else{
+                //         showToast('请正确输入邮箱')
+                //     }
                     
-                }
+                // }
             },
             reckonTime(){
                 let sTime = setInterval(()=>{
