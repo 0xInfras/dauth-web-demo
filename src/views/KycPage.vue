@@ -11,19 +11,19 @@
         
         <van-cell-group>
             <p class="key_s_title">1.Complete the forms</p>
-            <!-- <van-tabs style="padding-top:5.3vw" v-model:active="sendType">
-                <van-tab  title="Mobile phone" name="1" >
+            <van-tabs style="padding-top:5.3vw" v-model:active="sendType">
+                <van-tab  title="Email" name="2">
+                     <div class="flex_main" style="padding-top:2vw">
+                        <van-field class="van_field_css van_field_css_phone" style="width:100%;margin-left:0" v-model="mail" placeholder="请输入邮箱" />
+                    </div>
+                </van-tab>
+                <van-tab  title="Switch to Mobile phone" name="1" >
                      <div class="flex_main" style="padding-top:2vw">
                         <div class="phone_num" @click="pickerDisplay(true)">
                         {{phoneNum}}
                         <van-icon name="arrow-down" style="position:relative;left:1vw" />
                         </div>
                         <van-field class="van_field_css van_field_css_phone" v-model="phone" placeholder="请输入手机" />
-                    </div>
-                </van-tab>
-                  <van-tab  title="Switch to Email" name="2">
-                     <div class="flex_main" style="padding-top:2vw">
-                        <van-field class="van_field_css van_field_css_phone" style="width:100%;margin-left:0" v-model="mail" placeholder="请输入邮箱" />
                     </div>
                 </van-tab>
             </van-tabs>
@@ -33,7 +33,11 @@
                 placeholder="短信"></van-field>
                 <div class="sms_btn" :class="{sms_btn_disable:isSend || !sendButtonEnable}" 
                     @click="getSms">{{isSend?second+"s":smsTitle}}</div>
-            </div> -->
+            </div>
+            <div>
+            <div class="sms_btn" :class="{sms_btn_disable:!sendButtonEnable}" 
+                    @click="bindAccount">Bind</div>
+            </div>
 
             <p class="key_s_title2">Document Issued Country/Region</p>
              <div class="flex_main">
@@ -63,6 +67,7 @@
                
             </div>
         </van-cell-group>
+
         <p class="key_s_title">2.Take pictures of both sides of your document</p>
          <p class="key_s_title2" style="margin-top:6vw;margin-bottom:1.5vw">
             ·Ensure all details are readable in the image.
@@ -138,7 +143,7 @@ import {DAuthWalletManager} from "dauth-web";
             mail:"",
             pickerShow:false,
             columns :[],
-            sendType:"1",
+            sendType:"2",
             RegionCode:"",
             RegionName:"",
             regionShow:false,
@@ -355,40 +360,85 @@ import {DAuthWalletManager} from "dauth-web";
                 // }
             },
             getSms(){
-                // let aollow = false
-                // if(this.sendType === '1'){
-                //     var myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
-                //     aollow = myreg.test(this.phone)
-                // }else{
-                //     // eslint-disable-next-line no-redeclare
-                //     var myreg =  /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
-                //     aollow = myreg.test(this.mail)
-                // }
+                if(this.sendButtonEnable && !this.isSend)
+                {
+                    let aollow = false
+                if(this.sendType === '1'){
+                    var myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
+                    aollow = myreg.test(this.phone)
+                }else{
+                    // eslint-disable-next-line no-redeclare
+                    var myreg =  /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
+                    aollow = myreg.test(this.mail)
+                }
                 
   
-                // if(aollow){
-                //     if(this.isSend){return}
-                //     this.isSend = true
-                //     let data = {
-                //         "phone":this.phone,
-                //         "code":this.phoneNum
-                //     }
-                //     postEventToken("url",data,()=>{
-                //         //成功
-                //          showToast('已发送')
-                //         this.second = 59
-                //         this.reckonTime()
-                //     })
-                   
-
-                // }else{
-                //     if(this.sendType === '1'){
-                //         showToast('请正确输入手机')
-                //     }else{
-                //         showToast('请正确输入邮箱')
-                //     }
+                if(aollow){
+                    if(this.isSend){return}
+                    this.isSend = true
+                    let data = {
+                        "phone":this.phone,
+                        "code":this.phoneNum
+                    }
+                    if(this.sendType === '1'){
+                        DAuthWalletManager.sendPhoneVerifyCode({
+                            phone: this.phone, // 手机号
+                            areaCode: this.phoneNum // 区号
+                        }
+                        ).then(
+                            ()=>{
+                                showToast('发送验证码成功')
+                                this.second = 59
+                                this.reckonTime()
+                            }
+                        ).catch(()=>{
+                            showToast('发送验证码失败')
+                        })
+                    }else{
+                        DAuthWalletManager.sendEmailVerifyCode({
+                            email: this.mail, 
+                        }
+                        ).then(
+                            ()=>{
+                                showToast('发送验证码成功')
+                                this.second = 59
+                                this.reckonTime()
+                            }
+                        ).catch(()=>{
+                            showToast('发送验证码失败')
+                        })
+                    }
+                }else{
+                    if(this.sendType === '1'){
+                        showToast('请正确输入手机')
+                    }else{
+                        showToast('请正确输入邮箱')
+                    }
                     
-                // }
+                }
+                }
+            },
+            bindAccount(){
+                if(this.sendButtonEnable)
+                {
+                    if(this.sms === "")
+                    {
+                        showToast("请先发送验证码")
+                        return
+                    }
+                    if(this.sendType === '1'){
+                    showToast("to do")
+                    }
+                    else{
+                        DAuthWalletManager.bindEmail({ email: this.email, verifyCode: this.sms })
+                        .then((ret) => {
+                            showToast("绑定成功")
+                        }).catch((ret) => {
+                            showToast("绑定失败")
+                        }
+                        );
+                    }
+                }
             },
             reckonTime(){
                 let sTime = setInterval(()=>{
