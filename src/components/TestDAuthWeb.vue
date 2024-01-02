@@ -615,21 +615,21 @@ export default class TestDAuthWeb extends Vue {
           window.alert("请先绑定email")
         }
         else if (kycState === "NeedKYC" || kycState === "KYCFailed") {
-          // this.$router.push({
-          //   name: 'KycPage',
-          //   query: {email: infoConvert.email}
-          // })
-          let icon = ""
-          for(const c of this.tokenCodes){
-            if(c.value === this.tokenCode)
-            {
-              icon = c.data
-            }
-          }
           this.$router.push({
-            name: 'CheckOut',
-            query: {faitCode:this.faitCode, amount:this.failAmount, cryptoCode:this.tokenCode, cryptoIcon:icon}
+            name: 'KycPage',
+            query: {email: infoConvert.email}
           })
+          // let icon = ""
+          // for(const c of this.tokenCodes){
+          //   if(c.value === this.tokenCode)
+          //   {
+          //     icon = c.data
+          //   }
+          // }
+          // this.$router.push({
+          //   name: 'CheckOut',
+          //   query: {faitCode:this.faitCode, amount:this.failAmount, cryptoCode:this.tokenCode, cryptoIcon:icon}
+          // })
         }
         else if (kycState === "KYCSucess") {
           let icon = ""

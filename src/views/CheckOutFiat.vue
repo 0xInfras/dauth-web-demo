@@ -34,7 +34,7 @@
 import {postEventToken} from "../utils/common.js"
 import { showToast  } from 'vant'
 
-import {DAuthWalletManager,CommonResponse, Crypto,OrderQuoteResault, FiatInfo} from "dauth-web"
+import {DAuthWalletManager} from "dauth-web"
 
 export default {
     data(){
