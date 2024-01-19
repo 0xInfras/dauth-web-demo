@@ -6,11 +6,23 @@ import 'vant/lib/index.css';
 import {DAuthWalletManager} from "dauth-web"
 
 DAuthWalletManager.initSDK({
-    appId: "1bfe5bbf619681e49cdc62d07badc4cb",
+    // appId: "1bfe5bbf619681e49cdc62d07badc4cb",
+    // sdkVersion: "1.2.2",
+    // serverTag: "test",
+    // chainType: "ArbitrumGoerli"
+
+    // appId: "430f220f2a6554040849863e04ba5187",
+    // sdkVersion:"1.2.2",
+    // serverTag:"prod",
+    // chainType:"Arbitrum"
+    //捕鱼
+    appId: "a993732e50bfb4dc0219dc5bf7670983",
     sdkVersion: "1.2.2",
     serverTag: "test",
     chainType: "ArbitrumGoerli"
-    // appId: "430f220f2a6554040849863e04ba5187",
+
+    //a93d0f48d9b57b0da6284dd96b502721
+    // appId: "a93d0f48d9b57b0da6284dd96b502721",
     // sdkVersion:"1.2.2",
     // serverTag:"prod",
     // chainType:"Arbitrum"

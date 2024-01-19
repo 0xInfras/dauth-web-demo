@@ -166,6 +166,7 @@ import {
   CommonResponse, DAuthWalletManager, IExcuteData, ethers,
   QueryUserInfoResult, KycStatus, Currency
 } from "dauth-web";
+
 import erc20 from "./ERC20.json";
 
 export interface Op {
@@ -243,7 +244,8 @@ export default class TestDAuthWeb extends Vue {
     DAuthWalletManager.loginWithType("GOOGLE", data)
   }
   startTgLogin() {
-    DAuthWalletManager.loginWithType("TELEGRAM", { redirectUri: "https://localhost:3000" })
+    DAuthWalletManager.loginWithType("TELEGRAM", { redirectUri: window.location.href})
+    //DAuthWalletManager.loginWithType("TELEGRAM", { redirectUri: "http://localhost:3000/#/KycPage"})
   }
   startAuthEmailPassword() {
     const payload = {
@@ -475,14 +477,16 @@ export default class TestDAuthWeb extends Vue {
   }
 
   mounted() {
+
     const list = DAuthWalletManager.getChainList()
     for (const l of list) {
       this.options.push({ value: l, text: l , data:""})
 
     }
     this.selectedOption = this.options[0].value;
-
     //查询可购买币种
+    const logonCache = DAuthWalletManager.queryUserCache()
+   if(logonCache !== undefined && logonCache.dauthAccessToken !== ""){
     DAuthWalletManager.queryCryptoTypes().then(( cryptos : CommonResponse< Currency>)=>{
       this.tokenCodes = []
       for(const c of cryptos.data.crypto)
@@ -507,6 +511,7 @@ export default class TestDAuthWeb extends Vue {
     ).catch(()=>{
       window.alert("查询可购买币种列表失败")
     })
+   } 
     this.checkAuth();
   }
 

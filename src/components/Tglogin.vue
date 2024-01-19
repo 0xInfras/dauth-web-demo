@@ -1,16 +1,20 @@
 <!-- eslint-disable vue/no-parsing-error -->
-<template>
-  <div>
-    <label>Telegram登录</label>
-    <iframe src="/static/tgLogin.html" width="100%" height="500px" frameborder="0" align="center" />
-  </div>
-</template>
-  
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-@Options({})
+import { Vue } from 'vue-class-component';
+
+import {DAuthWalletManager} from "dauth-web"
+
 export default class TgLogin extends Vue{
- 
+  mounted() {
+    DAuthWalletManager.tgLinkLogin().then(()=>{
+      //登录成功 ，跳转
+      this.$router.push({
+            name: 'home'
+          })
+    }).catch(()=>{
+      window.alert("login error")
+    });
+  }
 }
 </script>
 

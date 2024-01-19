@@ -7,6 +7,7 @@ import CryptoOrder from "../views/CryptoOrder.vue"
 import PayWithCrypto from "../views/PayWithCrypto.vue"
 import PayWithFiat from "../views/PayWithFiat.vue"
 import CheckOutFiat from "../views/CheckOutFiat.vue"
+import TgLoginView from '../views/TgLogin.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -55,6 +56,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'PayWithCrypto',
     path: '/PayWithCrypto',
     component: PayWithCrypto
+  },
+  {
+    name: 'TgLogin',
+    path: '/TgLogin',
+    component: TgLoginView
   },
 ]
 
