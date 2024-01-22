@@ -164,7 +164,7 @@
 import { Vue } from 'vue-class-component';
 import {
   CommonResponse, DAuthWalletManager, IExcuteData, ethers,
-  QueryUserInfoResult, KycStatus, Currency
+  QueryUserInfoResult, KycStatus, Currency,TLoginType
 } from "dauth-web";
 
 import erc20 from "./ERC20.json";
@@ -245,6 +245,12 @@ export default class TestDAuthWeb extends Vue {
   }
   startTgLogin() {
     DAuthWalletManager.loginWithType("TELEGRAM", { redirectUri: window.location.href})
+    .then((res)=>{
+      //登录成功
+      this.initLoginStata(res)
+    }).catch((er)=>{
+      window.alert("登录失败" + JSON.stringify(er))
+    })
     //DAuthWalletManager.loginWithType("TELEGRAM", { redirectUri: "http://localhost:3000/#/KycPage"})
   }
   startAuthEmailPassword() {
@@ -485,33 +491,33 @@ export default class TestDAuthWeb extends Vue {
     }
     this.selectedOption = this.options[0].value;
     //查询可购买币种
-    const logonCache = DAuthWalletManager.queryUserCache()
-   if(logonCache !== undefined && logonCache.dauthAccessToken !== ""){
-    DAuthWalletManager.queryCryptoTypes().then(( cryptos : CommonResponse< Currency>)=>{
-      this.tokenCodes = []
-      for(const c of cryptos.data.crypto)
-      {
-        this.tokenCodes.push({text: c.cryptoCode, value:c.cryptoCode, data:c.cryptoIcon})
-      }
-      if(this.tokenCodes.length > 0)
-      {
-        this.tokenCode = this.tokenCodes[0].value
-      }
-      this.faitCodes = []
-      for(const c of cryptos.data.faitCodes)
-      {
-        this.faitCodes.push({text: c, value:c, data:""})
-      }
-      if(this.faitCodes.length > 0)
-      {
-        this.faitCode = this.faitCodes[0].value
-      }
+  //   const logonCache = DAuthWalletManager.queryUserCache()
+  //  if(logonCache !== undefined && logonCache.dauthAccessToken !== ""){
+  //   DAuthWalletManager.queryCryptoTypes().then(( cryptos : CommonResponse< Currency>)=>{
+  //     this.tokenCodes = []
+  //     for(const c of cryptos.data.crypto)
+  //     {
+  //       this.tokenCodes.push({text: c.cryptoCode, value:c.cryptoCode, data:c.cryptoIcon})
+  //     }
+  //     if(this.tokenCodes.length > 0)
+  //     {
+  //       this.tokenCode = this.tokenCodes[0].value
+  //     }
+  //     this.faitCodes = []
+  //     for(const c of cryptos.data.faitCodes)
+  //     {
+  //       this.faitCodes.push({text: c, value:c, data:""})
+  //     }
+  //     if(this.faitCodes.length > 0)
+  //     {
+  //       this.faitCode = this.faitCodes[0].value
+  //     }
       
-    }
-    ).catch(()=>{
-      window.alert("查询可购买币种列表失败")
-    })
-   } 
+  //   }
+  //   ).catch(()=>{
+  //     window.alert("查询可购买币种列表失败")
+  //   })
+  //  } 
     this.checkAuth();
   }
 
@@ -601,10 +607,14 @@ export default class TestDAuthWeb extends Vue {
 
   async checkAuth() {
     try {
-      const response = await DAuthWalletManager.checkLoginRedirctUrl({ url: window.location.href });
-      //window.alert(JSON.stringify(response))
-      console.log("check data ", response);
-      this.initLoginStata(response);
+      const response = await DAuthWalletManager.onMount();
+      if(response.error !== -1)
+      {
+        this.initLoginStata(response);
+      }
+      else{
+        window.alert("请登录")
+      }
     }
     catch (err) {
       console.log(err)
