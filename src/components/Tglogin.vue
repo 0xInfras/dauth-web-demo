@@ -6,7 +6,7 @@ import {DAuthWalletManager} from "dauth-web"
 
 export default class TgLogin extends Vue{
   mounted() {
-    DAuthWalletManager.tgLinkLogin().then(()=>{
+    DAuthWalletManager.tgLinkLogin(window.location.href).then(()=>{
       //登录成功 ，跳转
       this.$router.push({
             name: 'home'

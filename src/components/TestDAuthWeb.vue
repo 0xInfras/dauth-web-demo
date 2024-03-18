@@ -2,7 +2,7 @@
   <div>
     <div>
       <label>当前链</label>
-      <select v-model="selectedOption">
+      <select v-model="selectedOption" @change="onChainChange">
         <option v-for="option in options" :value="option.text" :key="option.value">
           {{ option.text }}
         </option>
@@ -97,16 +97,39 @@
         <button @click="qureyErcBlance">
           查询
         </button>
+        <button @click="qureyAllErcBlance">
+          查询所有
+        </button>
         <label>{{ erc20Text }}</label>
       </div>
       <label>转账给</label>
       <input type="text" v-model="transferAddressBUSD" placeholder="转出地址">
-      <label>{{ toErc20Value }}</label>
+      <input type="text" v-model="toErc20Value" >
       <button @click="transferBusd">
         提交
       </button>
     </div>
     <br />
+
+    <div>
+      <div>
+        <label>查询ERC721-ID:</label>
+      </div>
+      <div>
+        <label>ERC721地址:</label>
+        <input type="text" v-model="erc721Address" placeholder="ERC721地址">
+        <button @click="qureyErc721Ids">
+          查询
+        </button>
+        <label>{{ erc721Text }}</label>
+      </div>
+      <label>转账给</label>
+      <input type="text" v-model="transferAddressErc721" placeholder="转出地址">
+      <input type="text" v-model="erc721id" >
+      <button @click="transferErc721">
+        提交
+      </button>
+    </div>
 
     <div>
       <label>{{ trxRes }}</label>
@@ -164,15 +187,19 @@
 import { Vue } from 'vue-class-component';
 import {
   CommonResponse, DAuthWalletManager, IExcuteData, ethers,
-  QueryUserInfoResult, KycStatus, Currency,TLoginType
+  QueryUserInfoResult, KycStatus, Currency,  Erc20Query
 } from "dauth-web";
 
 import erc20 from "./ERC20.json";
+import TgLogin from './Tglogin.vue';
+
+import erc721 from "./ERC721.json"
+
 
 export interface Op {
   value: string,
   text: string,
-  data:string
+  data:number
 }
 
 
@@ -208,6 +235,8 @@ export default class TestDAuthWeb extends Vue {
   erc20Text = "余额"
   erc20Resiver = ""
 
+  erc721Text = "ids"
+
   loginEmailStr = ""
   bindEmailStr = ""
 
@@ -220,6 +249,11 @@ export default class TestDAuthWeb extends Vue {
   resetNewPassword = ""
 
   transferAddressBUSD = ""
+  transferAddressErc721 = ""
+
+  erc721id=""
+
+  erc721Address=""
 
   phoneStr = ""
   phoneCode = ""
@@ -227,21 +261,52 @@ export default class TestDAuthWeb extends Vue {
 
   toErc20Value = ""
 
+
+  onChainChange(){
+    console.log("chain change")
+    for (let i = 0; i <= this.options.length; i++) {
+      if( this.options[i].text == this.selectedOption){
+        //DAuthWalletManager.setChain(Number(this.options[i].text))
+        break
+      }
+    }
+  }
+
+  getCurrentSelectId()
+  {
+    for (let i = 0; i <= this.options.length; i++) {
+      if( this.options[i].text == this.selectedOption){
+        return this.options[i].data
+      }
+    }
+    return -1
+  }
+
   startAuth() {
     const info = {
       clientId: 'Vks1X3E3WVZoTHpXUUx3RGhaNlU6MTpjaQ',
-      redirectUri: "https://demos.infras.online/space"
+      redirectUri: "http://localhost:3000"
     }
-    DAuthWalletManager.loginWithType("TWITTER", info)
+    DAuthWalletManager.loginWithType("TWITTER", info).then((res)=>{
+      //登录成功
+      this.initLoginStata(res)
+    }).catch((er)=>{
+      window.alert("登录失败" + JSON.stringify(er))
+    })
   }
 
   startAuthGoogle() {
     const data = {
       clientId: '209392989758-j14das5beql07e9ifomltgv3icgiuuvh.apps.googleusercontent.com',
-      redirectUri: "https://localhost:3000",
+      redirectUri: "http://localhost:3000",
       clientSecret: "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"
     }
-    DAuthWalletManager.loginWithType("GOOGLE", data)
+    DAuthWalletManager.loginWithType("GOOGLE", data).then((res)=>{
+      //登录成功
+      this.initLoginStata(res)
+    }).catch((er)=>{
+      window.alert("登录失败" + JSON.stringify(er))
+    })
   }
   startTgLogin() {
     DAuthWalletManager.loginWithType("TELEGRAM", { redirectUri: window.location.href})
@@ -434,12 +499,12 @@ export default class TestDAuthWeb extends Vue {
     //预估gas
     console.log("trans to ", this.addressText);
     if ("" !== this.addressText) {
-      DAuthWalletManager.estimateGas(callData).then(
+      DAuthWalletManager.estimateGas(callData, this.getCurrentSelectId()).then(
         (gasres) => {
           console.log("estmit gas ", gasres.data.verificationGas, gasres.data.callGas)
           //gas预估结果，提交交易
           DAuthWalletManager.execute(callData,
-            gasres.data
+            gasres.data, this.getCurrentSelectId()
           ).then((res) => {
             this.trxRes = res.data;
           }).catch((res) => {
@@ -459,7 +524,7 @@ export default class TestDAuthWeb extends Vue {
     //this.doCallTest(0.001, "0x");
     const callData = {
       toAddress: this.transferAddress,
-      amount: 0.001,
+      amount: "0.001",
       callData: '0x'
     };
 
@@ -472,24 +537,37 @@ export default class TestDAuthWeb extends Vue {
     // const privoder = new ethers.providers.JsonRpcProvider("")
 
 
-    const token = new ethers.utils.Interface(erc20.abi);
-    const callData = {
-      toAddress: this.erc20Address,
-      amount: 0,
-      callData: token.encodeFunctionData("transfer",
-        [ethers.utils.getAddress(this.transferAddressBUSD), this.toErc20Value]),
-    }
-    this.doCallTest(callData);
+    // const token = new ethers.utils.Interface(erc20.abi);
+    // const callData = {
+    //   toAddress: this.erc20Address,
+    //   amount: 0,
+    //   callData: token.encodeFunctionData("transfer",
+    //     [ethers.utils.getAddress(this.transferAddressBUSD), this.toErc20Value]),
+    // }
+    // this.doCallTest(callData);
+
+    DAuthWalletManager.transferERC20(
+      this.erc20Address, 
+    this.transferAddressBUSD, 
+    parseFloat( this.toErc20Value) ,
+    this.getCurrentSelectId()
+    )
+    .then(()=>{
+      console.log("transfer sucess")
+    }).catch(()=>{
+      console.log("transfer faild")
+    })
   }
 
   mounted() {
 
-    const list = DAuthWalletManager.getChainList()
+    const list = DAuthWalletManager.queryChainList()
     for (const l of list) {
-      this.options.push({ value: l, text: l , data:""})
+      this.options.push({ value: l.chainId.toString(), text: l.chainName , data: l.chainId})
 
     }
-    this.selectedOption = this.options[0].value;
+    console.log("options", this.options)
+    this.selectedOption = this.options[0].text;
     //查询可购买币种
   //   const logonCache = DAuthWalletManager.queryUserCache()
   //  if(logonCache !== undefined && logonCache.dauthAccessToken !== ""){
@@ -542,9 +620,21 @@ export default class TestDAuthWeb extends Vue {
       DAuthWalletManager.queryWalletAddress().then((res) => {
         console.log("query address ", res.data)
         this.addressText = res.data;
-        this.banlanceText = "0"
-        DAuthWalletManager.queryWalletBalance().then((ret) => {
-          this.banlanceText = ret.data.toString();
+        this.banlanceText = ""
+        const qbs : number[] = []
+        for(const op of this.options)
+        {
+          console.log("op", op)
+          qbs.push(op.data)
+        }
+        DAuthWalletManager.queryWalletBalances(qbs).then((ret) => {
+          for( const  b of ret.data)
+          {
+            this.banlanceText += b.chainId.toString()
+            this.banlanceText += ":"
+            this.banlanceText += b.balance.toString()
+            this.banlanceText += ","
+          }
         }).catch((ret) => {
           if (ret.error === -1) {
             this.loginState = "请重新登录";
@@ -604,16 +694,104 @@ export default class TestDAuthWeb extends Vue {
       }
     });
   }
+  qureyAllErcBlance() {
+    const ps : Erc20Query[] = []
+   for(const op of this.options)
+   {
+    ps.push({
+      chainId : op.data ,
+      erc20Address : this.erc20Address
+    })
+   }
+
+    DAuthWalletManager.queryWalletERC20S(ps).then((ret) => {
+      this.erc20Text = ""
+      for( const r of ret.data){
+        this.erc20Text += r.chainId.toString()
+        this.erc20Text += ":"
+        this.erc20Text += r.balance
+        this.erc20Text += ","
+      }
+    }).catch((ret) => {
+      if (ret.error === -1) {
+        this.loginState = "请重新登录";
+      }
+      else {
+        window.alert(JSON.stringify(ret.data))
+      }
+    });
+  }
+
+  qureyErc721Ids() {
+
+    //查询不用dauth
+    const provider = new ethers.providers.JsonRpcProvider("https://arb-sepolia.g.alchemy.com/v2/hLhkQSicZ9EKv9qzcMf87knjoAQArLVh")
+    this.erc721Text = ""
+    DAuthWalletManager.queryWalletAddress().then((owner)=>{
+      const nft =new ethers.Contract(this.erc721Address, erc721.abi, provider)
+        nft.balanceOf(owner.data).then((banlance:any)=>{
+          for(var i = 0; i < banlance; ++i){
+            nft.tokenOfOwnerByIndex(owner.data, i).then((id:any)=>{
+              this.erc721Text += id
+            })
+          }
+        }).catch((er:any)=>{
+          console.error(er)
+        })
+    }).
+    catch((er)=>{
+      console.error(er)
+    })
+   
+
+    // const callData = {
+    //   toAddress: this.erc721Address,
+    //   amount: 0,
+    //   callData: nft.encodeFunctionData("transfer",
+    //     [ethers.utils.getAddress(this.transferAddressBUSD), this.toErc20Value]),
+    // }
+    // this.doCallTest(callData);
+    
+  }
+
+  transferErc721(){
+    DAuthWalletManager.queryWalletAddress().then((owner)=>{
+
+      const nft = new ethers.utils.Interface(erc721.abi);
+    const callData = {
+          toAddress: this.erc721Address,
+          amount: "0",
+          callData: nft.encodeFunctionData("transferFrom",
+            [owner.data, ethers.utils.getAddress(this.transferAddressErc721), this.erc721id]),
+        }
+        this.doCallTest(callData);
+    }).catch((er)=>{
+      console.error(er)
+    })
+   
+  }
 
   async checkAuth() {
     try {
-      const response = await DAuthWalletManager.onMount();
-      if(response.error !== -1)
+      let response = await DAuthWalletManager.onMount();
+      if(response.error !== 0)
       {
-        this.initLoginStata(response);
+        if(response.error === -1)
+        {
+          response = await DAuthWalletManager.checkRedirectUrl(window.location.href)
+        }
+
+        if(response.error === 0)
+        {
+          this.initLoginStata(response);
+        }
+        else{
+             //请重新登录
+          window.alert("登录错误")
+        }
       }
       else{
-        window.alert("请登录")
+        this.initLoginStata(response);
       }
     }
     catch (err) {
@@ -651,7 +829,7 @@ export default class TestDAuthWeb extends Vue {
           for(const c of this.tokenCodes){
             if(c.value === this.tokenCode)
             {
-              icon = c.data
+              icon = c.data.toString()
             }
           }
           this.$router.push({
